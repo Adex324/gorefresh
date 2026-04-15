@@ -1,8 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-geist: 'Geist', sans-serif;
+}
+
+@utility font-geist {
+  font-family: var(--font-geist);
+}
 
 @layer components {
   .nav_link {
     @apply text-gray-500 hover:text-[#075207] transition-colors duration-200;
   }
-  
+
+  .btn-green {
+    @apply px-4 py-2 bg-[#0E840D] text-white rounded font-medium hover:bg-[#075207] transition-colors duration-200;
+  }
+
+  .btn-orange {
+    @apply px-4 py-2 bg-[#F76319] text-white rounded-lg font-medium hover:bg-[#d9531a] transition-colors duration-200;
+  }
 }
