@@ -5,6 +5,7 @@ import second_background from '../assets/second_background.svg';
 import delicious_pic from '../assets/delicious_pic.svg';
 import quality_pic from '../assets/quality_pic.svg';
 import fastest_pic from '../assets/fastest_pic.svg';
+import hero_side_pic from '../assets/hero_side_pic.svg';
 
 const Hero = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -59,6 +60,7 @@ const Hero = () => {
         )}
 
         {/* Hero Content */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
         <div className="flex flex-col gap-8 mt-20 md:mt-40 px-6 md:px-20">
           <div>
             <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040] md:w-5/6">Wholesome Pap.</p>
@@ -68,6 +70,12 @@ const Hero = () => {
             <a className="btn-green" href="">Contact us</a>
             <a className="btn-orange" href="">Shop Now</a>
           </div>
+        </div>
+
+        <div>
+            <img src={hero_side_pic} alt="" />
+        </div>
+
         </div>
       </section>
 
