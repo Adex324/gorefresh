@@ -9,7 +9,8 @@ import hero_side_pic from '../assets/hero_side_pic.svg';
 import one_icon from '../assets/one_icon.svg';
 import two_icon from '../assets/two_icon.svg';
 import three_icon from '../assets/three_icon.svg';
-import { SIDEBAR_LINKS } from '../data/marketData';
+import { PRODUCTS } from '../data/marketData'; 
+import CustomerReviews from './CustomerReviews';
 
 /* ── Star Rating ─────────────────────────────────────────── */
 const StarRating = ({ stars, max = 5 }) => {
@@ -185,11 +186,14 @@ const Hero = () => {
           MarketPlace
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
-          {SIDEBAR_LINKS.map((item, index) => (
+          {PRODUCTS.map((item, index) => (
             <ProductCard key={item.label} {...item} featured={index === 0} />
           ))}
         </div>
       </section>
+
+      {/* Section 6 — Customer Reviews */}
+     <CustomerReviews />
     </>
   );
 };
