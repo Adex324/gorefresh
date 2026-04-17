@@ -1,7 +1,8 @@
 import React from 'react'
 import second_background from '../assets/second_background.svg';
 
-const PureandNutritious = () => {
+const Pure = () => {
+  
   return (
     <section
            className="relative w-full min-h-screen font-geist flex flex-col bg-cover bg-center bg-no-repeat"
@@ -22,4 +23,6 @@ const PureandNutritious = () => {
   )
 }
 
-export default PureandNutritious
+
+
+export default Pure

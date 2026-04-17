@@ -6,7 +6,7 @@ import hero_side_pic from '../assets/hero_side_pic.svg';
 
 import HowGorefresh from '../sections/HowGorefresh';
 import Marketplace from '../sections/Marketplace';
-import PureandNutritious from '../sections/Pureandnutritious';
+import Pure from '../sections/Pure';
 import Whychooseus from '../sections/Whychooseus';
 import CustomerReviews from '../sections/CustomerReviews';
 
@@ -87,7 +87,7 @@ const Hero = () => {
       </section>
 
       {/* Section 2 — Pure & Nutritious */}
-     <PureandNutritious/>
+     <Pure/>
 
       {/* Section 3 — Why Choose Us */}
       <Whychooseus />
