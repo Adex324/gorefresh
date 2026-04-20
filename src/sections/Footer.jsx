@@ -47,7 +47,7 @@ const Footer = () => {
         </div>
 
         {/* Links */}
-        <div className="flex flex-col gap-2 font-light text-sm">
+        <div className="flex flex-col gap-2 font-light text-sm mb-50 md:mb-70 ">
           {['Contact Us', 'Terms of Use', 'Cookie Policy', 'Privacy Policy'].map((link) => (
             <a key={link} href="" className="hover:underline hover:text-[#0C850C] transition-colors duration-200">
               {link}
