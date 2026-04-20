@@ -10,12 +10,9 @@ import Pure from '../sections/Pure';
 import Whychooseus from '../sections/Whychooseus';
 import CustomerReviews from '../sections/CustomerReviews';
 import PapNutrients from '../sections/PapNutrients';
+import Footer from '../sections/Footer';
 
 
-/* ── Star Rating ─────────────────────────────────────────── */
-
-
-/* ── Product Card ─────────────────────────────────────────── */
 
 
 /* ── Hero Component ───────────────────────────────────────── */
@@ -104,6 +101,8 @@ const Hero = () => {
     {/* Section 7 — Pap nutrients */}
    <PapNutrients/>
 
+   {/* Section 8 — Pap nutrients */}
+    <Footer/>
     </>
   );
 };
