@@ -14,7 +14,7 @@ const Pure = () => {
 
       {/* Desktop background — hidden below md */}
       <div
-        className="absolute inset-0 hidden md:block bg-no-repeat bg-center bg-[length:100%]"
+        className="absolute inset-0 hidden md:block bg-no-repeat bg-center bg-[length:110%]"
         style={{ backgroundImage: `url(${second_background})` }}
       />
 
