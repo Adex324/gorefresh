@@ -6,7 +6,7 @@ import fastest_pic from '../assets/fastest_pic.svg';
 
 const Whychooseus = () => {
   return (
-    <section className="bg-white py-16 px-6 md:px-12 text-center font-geist">
+    <section className="bg-white py-16 px-6 md:px-12 text-center font-geist mt-5">
             <p className="text-[#0C850C] font-bold text-3xl sm:text-4xl md:text-5xl mb-10">Why Choose Us?</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 max-w-4xl mx-auto">
               {[

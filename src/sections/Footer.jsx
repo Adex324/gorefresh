@@ -41,7 +41,7 @@ const Footer = () => {
             <div className="flex flex-row gap-4 items-center">
               <img src={youtube_footer} alt="YouTube" className="w-6 h-6 object-contain" />
               <img src={fb_footer}      alt="Facebook" className="w-6 h-6 object-contain" />
-              <img src={ig_footer}      alt="Instagram" className="w-6 h-6 object-contain" />
+              <a href="https://www.instagram.com/gorefreshfoods?igsh=ZHhsb2EzOXMyM3Zv"><img src={ig_footer}      alt="Instagram" className="w-6 h-6 object-contain"  /></a>
             </div>
           </div>
         </div>
