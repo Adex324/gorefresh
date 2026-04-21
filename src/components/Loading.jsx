@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import loading_pic from '../assets/loading_pic.svg';
+import background from '../assets/background.svg';
 
 
 const Loading = ({ onFinish }) => {
