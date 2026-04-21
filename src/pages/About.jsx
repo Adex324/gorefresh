@@ -14,7 +14,7 @@ const About = () => {
       <Navbar logo={logo} />
       <div className='flex gap-5 p-10 justify-center items-center text-center '>
         <img src={left_green} alt="" />
-        <p className=' text-2xl md:text-3xl text-[#0C850C] font-bold'>About us</p>
+        <p className=' text-xl md:text-3xl text-[#0C850C] font-bold'>About us</p>
         <img src={right_green} alt="" />
 
       </div>
