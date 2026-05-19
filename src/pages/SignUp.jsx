@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import background from '../assets/background.svg';
 import logo from '../assets/logo.png';
 import api from '../api/axios';
@@ -7,11 +8,12 @@ import api from '../api/axios';
 const SignUp = () => {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-
+const navigate = useNavigate();
   const handleChange = (e) => {
+    setError(''); 
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+const [error, setError] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -25,15 +27,16 @@ const SignUp = () => {
 
       console.log(response.data);
 
-      alert("Account created successfully! Please login.");
+    navigate('/login');
     } catch (error) {
       console.log(error);
 
       if (error.response) {
-        alert(error.response.data.detail || "Signup Failed.");
+        setError(error.response.data.detail || "Signup failed. Please try again.");
 
       }else {
-        alert("Something went wrong");
+       setError("Something went wrong. Please try again.");
+
       }
     
   };
@@ -126,13 +129,16 @@ const SignUp = () => {
               </button>
             </div>
           </div>
-
+{error && (
+  <p className="text-red-500 text-sm text-center">{error}</p>
+)}
           {/* Submit */}
           <button
             type="submit"
             className="w-full bg-[#0C850C] text-white font-bold tracking-widest py-4 rounded-lg hover:bg-[#075207] transition-colors duration-200"
           >
             CREATE ACCOUNT
+           
           </button>
         </form>
 

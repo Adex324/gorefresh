@@ -10,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [emailLocked, setEmailLocked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,22 +21,22 @@ const Login = () => {
 const token = response.data.data.tokens.access_token;
 const refresh = response.data.data.tokens.refresh_token;
 
-console.log("token:", token); // confirm it prints
+// console.log("token:", token); // confirm it prints
 
 localStorage.setItem('token', token);
 localStorage.setItem('refresh_token', refresh);
 
-console.log("saved:", localStorage.getItem('token')); // confirm it saved
+// console.log("saved:", localStorage.getItem('token')); // confirm it saved
 
-alert("Login successful!");
+// alert("Login successful!");
 window.location.href = "/";
     } catch (error) {
       console.log(error);
 
       if (error.response) {
-        alert(error.response.data.detail || "Login Failed.");
+        setError(error.response.data.detail || "Login failed. Please try again.");
       } else {
-        alert("Something went wrong");
+        setError("Something went wrong. Please try again.");
       }
     }
   };
@@ -67,7 +68,8 @@ window.location.href = "/";
               type="email"
               placeholder="Email or phone number"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setError(''); setEmail(e.target.value); }}
+              
               onBlur={() => { if (email) setEmailLocked(true); }}
               readOnly={emailLocked}
               className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
@@ -85,7 +87,7 @@ window.location.href = "/";
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setError(''); setPassword(e.target.value); }}
               className="flex-1 bg-transparent outline-none text-sm placeholder-gray-400"
             />
             <button
@@ -110,6 +112,9 @@ window.location.href = "/";
           </div>
 
           {/* Submit */}
+          {error && (
+  <p className="text-red-500 text-sm text-center">{error}</p>
+)}
           <button
             type="submit"
             className="w-full bg-[#0C850C] text-white font-semibold text-lg py-4 rounded-xl hover:bg-[#075207] transition-colors duration-200 mt-2"

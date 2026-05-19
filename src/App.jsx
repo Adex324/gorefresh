@@ -5,6 +5,9 @@ import About from './pages/About'
 import Loading from './components/Loading';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyCode     from './pages/VerifyCode';
+import NewPassword from './pages/NewPassword';
 
 const App = () => {
   const [showLoading, setShowLoading] = useState(true);
@@ -20,6 +23,9 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path = "/signup" element={<SignUp/>}/>
         <Route path="/login" element={<Login/>}/>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-code"     element={<VerifyCode />}     />
+        <Route path="/new-password" element={<NewPassword />} />
       </Routes>
     </Router>
   )
