@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation  } from "react-router-dom";
 import api from "../api/axios";
 
 const Navbar = ({ logo }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const navLinks = [
     { label: "Home",                 to: "/"          },
@@ -49,9 +50,15 @@ const Navbar = ({ logo }) => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex gap-8 lg:gap-15">
-          {navLinks.map(({ label, to }) => (
-            <Link key={to} to={to} className="nav_link">{label}</Link>
-          ))}
+         {navLinks.map(({ label, to }) => (
+  <Link
+    key={to}
+    to={to}
+    className={`nav_link ${location.pathname === to ? 'text-[#0C850C] font-semibold' : ''}`}
+  >
+    {label}
+  </Link>
+))}
         </div>
 
         {/* Desktop Right Side — changes based on login state */}
@@ -87,9 +94,14 @@ const Navbar = ({ logo }) => {
       {menuOpen && (
         <div className="md:hidden bg-white shadow-lg flex flex-col items-start px-6 py-4 gap-4 z-50">
           {navLinks.map(({ label, to }) => (
-            <Link key={to} to={to} className="nav_link" onClick={() => setMenuOpen(false)}>
-              {label}
-            </Link>
+            <Link
+  key={to}
+  to={to}
+  className={`nav_link ${location.pathname === to ? 'text-[#0C850C] font-semibold' : ''}`}
+  onClick={() => setMenuOpen(false)}
+>
+  {label}
+</Link>
           ))}
           <div className="flex flex-col gap-3 pt-2">
             {user ? (

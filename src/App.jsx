@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import VerifyCode     from './pages/VerifyCode';
 import NewPassword from './pages/NewPassword';
+import Dashboard from './pages/Dashboard';
 
 const App = () => {
   const [showLoading, setShowLoading] = useState(true);
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-code"     element={<VerifyCode />}     />
         <Route path="/new-password" element={<NewPassword />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   )

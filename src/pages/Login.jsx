@@ -124,9 +124,15 @@ window.location.href = "/";
         </form>
 
         {/* Forgot Password */}
-        <Link to="/forgot-password" className="text-sm text-[#1a1a1a] underline font-semibold hover:text-[#0C850C] transition-colors">
+        <div className='flex text-sm text-[#1a1a1a] justify-center gap-2 font-semibold'>
+        <Link to="/forgot-password" className=" underline  hover:text-[#0C850C] transition-colors">
           Forgot your Password?
         </Link>
+        <p>or Don't have an account?</p>
+          <Link to="/signup" className=" underline  hover:text-[#0C850C] transition-colors">
+           Sign up
+        </Link>
+        </div>
 
       </div>
     </section>
