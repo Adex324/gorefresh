@@ -4,6 +4,8 @@ import api from '../api/axios';
 import Navbar from '../components/Navbar';
 import logo from '../assets/logo.png';
 import background from '../assets/background.svg';
+import Marketplace from '../sections/Marketplace';
+import { Link } from "react-router-dom";
 
 // ── Icons ────────────────────────────────────────────────────
 const AccountIcon = () => (
@@ -55,34 +57,101 @@ const AccountPanel = ({ user }) => (
 );
 
 // ── Orders Panel ──────────────────────────────────────────────
+// ── Replace your existing OrdersPanel in Dashboard.jsx with this ──
+
 const OrdersPanel = () => {
-  // replace with real data when backend endpoint is ready
-  const orders = [];
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch cart on load
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await api.get('/carts/me');
+        setCart(response.data.data);
+        // save cart_id in case it wasn't saved before
+        localStorage.setItem('cart_id', response.data.data.id);
+      } catch {
+        setCart(null); // no cart yet = no orders
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCart();
+  }, []);
+
+  const removeItem = async (productId) => {
+    if (!cart) return;
+    try {
+      await api.delete(`/carts/${cart.id}/remove`, {
+        data: { products: [{ product_id: productId, quantity: 1 }] }
+      });
+      // Refresh cart after removing
+      const response = await api.get('/carts/me');
+      setCart(response.data.data);
+    } catch (error) {
+      console.log('Remove failed:', error);
+    }
+  };
+
+  if (loading) return <p className="text-sm text-gray-400">Loading orders...</p>;
+
+  const products = cart?.products ?? [];
 
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-bold text-[#1a1a1a]">Orders</h2>
-      {orders.length === 0 ? (
+
+      {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
           <OrdersIcon />
           <p className="text-gray-400 text-sm">You have no orders yet.</p>
-          <a href="#marketplace" className="btn-orange text-sm">Shop Now</a>
+        <Link to="/#marketplace" className="btn-orange text-sm">
+  Shop Now
+</Link>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {orders.map((order) => (
-            <div key={order.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl">
-              <img src={order.image} alt={order.name} className="w-14 h-14 object-contain rounded-lg bg-gray-100" />
+          {products.map((item) => (
+            <div key={item.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl">
+              <img
+                src={item.product_thumbnail}
+                alt={item.product_name}
+                className="w-14 h-14 object-contain rounded-lg bg-gray-100"
+              />
               <div className="flex-1">
-                <p className="font-medium text-sm">{order.name}</p>
-                <p className="text-xs text-gray-400">{order.weight}</p>
-                <p className="text-sm font-bold text-[#1a1a1a] mt-1">₦{order.price}</p>
+                <p className="font-medium text-sm">{item.product_name}</p>
+                <p className="text-xs text-gray-400">{item.product_category}</p>
+                <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                <p className="text-sm font-bold text-[#1a1a1a] mt-1">
+                  ₦{(item.unit_price * item.quantity).toLocaleString()}
+                </p>
               </div>
-              <button className="text-gray-400 hover:text-red-500 transition-colors">
+              <button
+                onClick={() => removeItem(item.product_id)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+              >
                 <TrashIcon />
               </button>
             </div>
           ))}
+
+          {/* Totals */}
+          <div className="border-t border-gray-200 pt-3 flex flex-col gap-1 text-sm">
+            <div className="flex justify-between text-gray-500">
+              <span>Subtotal</span>
+              <span>₦{cart.subtotal?.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Delivery fee</span>
+              <span>₦{cart.delivery_fee?.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between font-bold text-[#1a1a1a] mt-1">
+              <span>Total</span>
+              <span>₦{cart.total_amount?.toLocaleString()}</span>
+            </div>
+          </div>
+
           <button className="w-full bg-[#0C850C] text-white font-semibold py-3 rounded-xl hover:bg-[#075207] transition-colors mt-2">
             Checkout
           </button>

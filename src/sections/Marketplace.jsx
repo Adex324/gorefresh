@@ -1,8 +1,8 @@
-import React from 'react'
-import { PRODUCTS } from '../data/marketData'; 
+import React, { useState, useEffect } from 'react';
+import api from '../api/axios';
 
-const StarRating = ({ stars, max = 5 }) => {
-  const count = parseInt(stars, 10);
+const StarRating = ({ rating, max = 5 }) => {
+  const count = Math.round(rating); // rating comes as a number from backend
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }, (_, i) => (
@@ -19,36 +19,144 @@ const StarRating = ({ stars, max = 5 }) => {
   );
 };
 
-const ProductCard = ({ image, label, stars, price }) => (
-  <div className="flex flex-col rounded-lg overflow-hidden border-2 border-gray-200 bg-white 
+const ProductCard = ({ product, onAddToCart, adding }) => (
+  <div className="flex flex-col rounded-lg overflow-hidden border-2 border-gray-200 bg-white
     transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl cursor-pointer">
     <div className="bg-gray-100 flex items-center justify-center p-4 aspect-square">
-      <img src={image} alt={label} className="object-contain w-full h-full" />
+      <img
+        src={product.thumbnail_url}
+        alt={product.name}
+        className="object-contain w-full h-full"
+        onError={(e) => { e.target.src = '/placeholder.png'; }} // fallback if image fails
+      />
     </div>
     <div className="p-3 flex flex-col gap-1.5">
-      <p className="text-[#404040] font-medium text-sm leading-tight">{label}</p>
-      <StarRating stars={stars} />
+      <p className="text-[#404040] font-medium text-sm leading-tight">{product.name}</p>
+      <StarRating rating={product.rating} />
       <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
-        <p className="text-[#404040] font-bold text-base">₦{price.toLocaleString()}</p>
-        <button className="btn-green text-xs px-3 py-1.5">Add to cart</button>
+        <p className="text-[#404040] font-bold text-base">₦{product.price.toLocaleString()}</p>
+        <button
+          onClick={() => onAddToCart(product)}
+          disabled={adding === product.id}
+          className="btn-green text-xs px-3 py-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {adding === product.id ? 'Adding...' : 'Add to cart'}
+        </button>
       </div>
     </div>
   </div>
 );
+
 const Marketplace = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(null); // tracks which product is being added
+  const [feedback, setFeedback] = useState(''); // success/error message
+
+  // Fetch all products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get('/products');
+        setProducts(response.data.data);
+      } catch (error) {
+        console.log('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/products');
+      console.log('Products response:', response.data); // add this
+      setProducts(response.data.data);
+    } catch (error) {
+      console.log('Failed to fetch products:', error); // already there
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchProducts();
+}, []);
+  const addToCart = async (product) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setFeedback('Please log in to add items to cart');
+      setTimeout(() => setFeedback(''), 3000);
+      return;
+    }
+
+    setAdding(product.id);
+
+    try {
+      // Step 1 — check if user already has a cart
+      let cartId = localStorage.getItem('cart_id');
+
+      if (!cartId) {
+        // Step 2 — no cart yet, create one with the product
+        const createResponse = await api.post('/carts', {
+          products: [{ product_id: product.id, quantity: 1 }]
+        });
+        cartId = createResponse.data.data.id;
+        localStorage.setItem('cart_id', cartId);
+      } else {
+        // Step 3 — cart exists, just add the product
+        await api.post(`/carts/${cartId}/add`, {
+          products: [{ product_id: product.id, quantity: 1 }]
+        });
+      }
+
+      setFeedback(`${product.name} added to cart!`);
+      setTimeout(() => setFeedback(''), 3000);
+
+    } catch (error) {
+      console.log('Add to cart failed:', error);
+      setFeedback('Failed to add to cart. Please try again.');
+      setTimeout(() => setFeedback(''), 3000);
+    } finally {
+      setAdding(null);
+    }
+  };
+
   return (
-     <section id="marketplace" className="bg-white py-16 px-6 md:px-12 font-geist">
-        <p className="text-[#0C850C] font-bold text-3xl sm:text-4xl md:text-5xl text-center mb-10">
-          MarketPlace
+    <section id="marketplace" className="bg-white py-16 px-6 md:px-12 font-geist">
+      <p className="text-[#0C850C] font-bold text-3xl sm:text-4xl md:text-5xl text-center mb-10">
+        MarketPlace
+      </p>
+
+      {/* Feedback message */}
+      {feedback && (
+        <p className={`text-center text-sm mb-6 font-medium
+          ${feedback.includes('Failed') || feedback.includes('log in')
+            ? 'text-red-500'
+            : 'text-[#0C850C]'
+          }`}>
+          {feedback}
         </p>
+      )}
+
+      {/* Loading state */}
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <p className="text-gray-400 text-sm">Loading products...</p>
+        </div>
+      ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
-          {PRODUCTS.map((item, index) => (
-            <ProductCard key={item.label} {...item} featured={index === 0} />
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={addToCart}
+              adding={adding}
+            />
           ))}
         </div>
-      </section>
+      )}
+    </section>
+  );
+};
 
-  )
-}
-
-export default Marketplace
+export default Marketplace;

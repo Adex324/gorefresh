@@ -12,13 +12,27 @@ import CustomerReviews from '../sections/CustomerReviews';
 import PapNutrients from '../sections/PapNutrients';
 import Footer from '../sections/Footer';
 import Navbar from '../components/Navbar';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 
 
 
 
 /* ── Hero Component ───────────────────────────────────────── */
 const Hero = () => {
- 
+ const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [location]);
+
 
   return (
     <>
@@ -60,7 +74,9 @@ const Hero = () => {
       <HowGorefresh/>
 
       {/* Section 5 — MarketPlace */}
+      <section id="marketplace">
       <Marketplace />
+      </section>
       {/* Section 6 — Customer Reviews */}
      <CustomerReviews />
         
