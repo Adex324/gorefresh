@@ -6,7 +6,7 @@ import Loading from './components/Loading';
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
-import Verifycode     from './pages/Verifycode';
+import VerifyCode     from './pages/VerifyCode';
 import NewPassword from './pages/NewPassword';
 import Dashboard from './pages/Dashboard';
 
@@ -25,7 +25,7 @@ const App = () => {
         <Route path = "/signup" element={<SignUp/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-code"     element={<Verifycode />}     />
+        <Route path="/verify-code"     element={<VerifyCode />}     />
         <Route path="/new-password" element={<NewPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
