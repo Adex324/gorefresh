@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import background from '../assets/background.svg';
 import logo from '../assets/logo.png';
 
-const VerifyCode = () => {
+const Verify = () => {
   const [otp, setOtp] = useState(['', '', '', '']);
   const inputs = useRef([]);
   const navigate = useNavigate();
@@ -95,4 +95,4 @@ const VerifyCode = () => {
   );
 };
 
-export default VerifyCode;
+export default Verify;
