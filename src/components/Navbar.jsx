@@ -38,7 +38,7 @@ const Navbar = ({ logo }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('refresh_token');
     setUser(null);
-    navigate("/");
+    navigate("/login");;
   };
 
   return (

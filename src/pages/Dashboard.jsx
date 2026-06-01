@@ -205,9 +205,12 @@ const Dashboard = () => {
         const response = await api.get('/users/me');
         console.log(response.data.data);
         setUser(response.data.data);
-      } catch {
-        navigate('/login');
-      }
+      } catch (error) {
+  console.log('Failed to fetch user:', error);
+  if (error.response?.status === 401) {
+    navigate('/login');
+  }
+}
     };
     fetchUser();
   }, []);

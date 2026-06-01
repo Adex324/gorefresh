@@ -34,7 +34,7 @@ window.location.href = "/";
       console.log(error);
 
       if (error.response) {
-        setError(error.response.data.detail || "Login failed. Please try again.");
+        setError(error.response.data.error?.msg || "Login failed. Please try again.");
       } else {
         setError("Something went wrong. Please try again.");
       }
