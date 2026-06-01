@@ -1,46 +1,110 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
 import background from '../assets/background.svg';
 import logo from '../assets/logo.png';
 import api from '../api/axios';
 
+
+const Field = ({ label, name, children, errors }) => (
+    <div className="flex flex-col gap-1">
+      <div className="relative">
+        <label className="absolute -top-2.5 left-3 bg-white px-1 text-sm text-gray-500 z-10">
+          {label}
+        </label>
+        {children}
+      </div>
+      {errors[name] && (
+        <p className="text-red-500 text-xs ml-1">{errors[name]}</p>
+      )}
+    </div>
+  );
 const SignUp = () => {
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '' });
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
-const navigate = useNavigate();
-  const handleChange = (e) => {
-    setError(''); 
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  // ── Validation ───────────────────────────────────────────
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.firstName.trim())
+      newErrors.firstName = 'First name is required';
+
+    if (!form.lastName.trim())
+      newErrors.lastName = 'Last name is required';
+
+    if (!form.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\+234\d{10}$/.test(form.phone)) {
+      newErrors.phone = 'Format must be +2348012345678';
+    }
+
+    if (!form.password) {
+      newErrors.password = 'Password is required';
+    } else if (form.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    return newErrors;
   };
-const [error, setError] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors((prev) => ({ ...prev, [name]: '' })); // clear field error on type
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try{
-      const response = await api.post("/users", {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/users', {
         first_name: form.firstName,
         last_name: form.lastName,
         email: form.email,
-        password: form.password
+        phone: form.phone,
+        password: form.password,
       });
-
-      console.log(response.data);
-
-    navigate('/login');
+      navigate('/login');
     } catch (error) {
-      console.log(error);
-
-      if (error.response) {
-        setError(error.response.data.detail || "Signup failed. Please try again.");
-
-      }else {
-       setError("Something went wrong. Please try again.");
-
+      const msg = error.response?.data?.error?.msg || '';
+      if (msg.toLowerCase().includes('email')) {
+        setErrors({ email: 'This email is already registered' });
+      } else if (msg.toLowerCase().includes('phone')) {
+        setErrors({ phone: 'Invalid phone number. Use +2348012345678' });
+      } else if (msg.toLowerCase().includes('password')) {
+        setErrors({ password: 'Password is too weak' });
+      } else {
+        setErrors({ general: 'Something went wrong. Please try again.' });
       }
-    
+    } finally {
+      setLoading(false);
+    }
   };
-}
+
+  // ── Reusable field wrapper ────────────────────────────────
+  
 
   return (
     <section
@@ -49,72 +113,88 @@ const [error, setError] = useState('');
     >
       <div className="w-full max-w-xl flex flex-col items-center gap-6">
 
-        {/* Logo */}
         <img src={logo} alt="Gorefresh Logo" className="w-36" />
 
-        {/* Heading */}
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#1a1a1a]">Welcome to Gorefresh Foods</h1>
           <p className="text-sm tracking-widest text-gray-500 mt-1">CREATE ACCOUNT</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
 
           {/* First + Last Name */}
           <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative flex-1">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-sm text-gray-500">First Name</label>
+            <div className="flex-1">
+            <Field label="First Name" name="firstName" errors={errors}>
               <input
                 type="text"
                 name="firstName"
                 value={form.firstName}
                 onChange={handleChange}
+                placeholder="John"
                 className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
               />
+            </Field>
             </div>
-            <div className="relative flex-1">
-              <label className="absolute -top-2.5 left-3 bg-white px-1 text-sm text-gray-500">Last Name</label>
+
+            <div className="flex-1"> 
+            <Field label="Last Name" name="lastName" errors={errors}>
               <input
                 type="text"
                 name="lastName"
                 value={form.lastName}
                 onChange={handleChange}
+                placeholder="Doe"
                 className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
               />
-            </div>
+            </Field>
           </div>
 
+          </div>
+          
+
           {/* Email */}
-          <div className="relative">
-            <label className="absolute -top-2.5 left-3 bg-white px-1 text-sm text-gray-500">Email Address</label>
+          <Field label="Email Address" name="email" errors={errors}>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
+              placeholder="johndoe@gmail.com"
               className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
             />
-          </div>
+          </Field>
 
-          {/* Password — wrapped in relative so label can float above border */}
-          <div className="relative">
-            <label className="absolute -top-2.5 left-3 bg-white px-1 text-sm text-gray-500 z-10">
-              Password
-            </label>
+          {/* Phone */}
+          <Field label="Phone Number" name="phone" errors={errors}>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={(e) => {
+      const value = e.target.value.replace(/[^\d+]/g, ''); // only digits and +
+       handleChange({ target: { name: 'phone', value } });
+      }}
+              placeholder="+2348012345678"
+              className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
+            />
+          </Field>
+
+          {/* Password */}
+          <Field label="Password" name="password" errors={errors}>
             <div className="flex items-center border border-gray-400 rounded-lg px-4 py-3 gap-2 focus-within:border-[#0C850C] transition-colors">
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={form.password}
                 onChange={handleChange}
+                placeholder="Min. 8 characters"
                 className="flex-1 bg-transparent outline-none text-sm placeholder-gray-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="text-gray-400 hover:text-[#0C850C] transition-colors"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -128,21 +208,22 @@ const [error, setError] = useState('');
                 )}
               </button>
             </div>
-          </div>
-{error && (
-  <p className="text-red-500 text-sm text-center">{error}</p>
-)}
-          {/* Submit */}
+          </Field>
+
+          {/* General error */}
+          {errors.general && (
+            <p className="text-red-500 text-sm text-center">{errors.general}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-[#0C850C] text-white font-bold tracking-widest py-4 rounded-lg hover:bg-[#075207] transition-colors duration-200"
+            disabled={loading}
+            className="w-full bg-[#0C850C] text-white font-bold tracking-widest py-4 rounded-lg hover:bg-[#075207] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            CREATE ACCOUNT
-           
+            {loading ? 'Creating account...' : 'CREATE ACCOUNT'}
           </button>
         </form>
 
-        {/* Login link */}
         <p className="text-sm text-gray-500">
           Already have an account?{' '}
           <Link to="/login" className="text-[#0C850C] font-medium underline">Login</Link>
@@ -151,7 +232,6 @@ const [error, setError] = useState('');
       </div>
     </section>
   );
-}
-
+};
 
 export default SignUp;
