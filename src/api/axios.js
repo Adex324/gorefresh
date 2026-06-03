@@ -6,9 +6,11 @@ const api = axios.create({
 });
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  console.log('[Interceptor] Token being added:', token ? token.substring(0,20)+'…' : 'no token');
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
+   console.log('[Interceptor] Final headers:', config.headers);
   return config;
 });
 
@@ -20,7 +22,7 @@ api.interceptors.response.use(
         const refresh = localStorage.getItem('refresh_token');
         const res = await axios.post(
           'https://gorefreshbackend-production.up.railway.app/users/token',
-          { refresh_token: refresh }
+          { token: refresh }
         );
         const newToken = res.data.data.tokens.access_token;
         localStorage.setItem('token', newToken);

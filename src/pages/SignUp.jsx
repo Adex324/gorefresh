@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import background from '../assets/background.svg';
 import logo from '../assets/logo.png';
-import api from '../api/axios';
+import authApi from '../api/authApi';
 
 
 const Field = ({ label, name, children, errors }) => (
@@ -79,7 +79,7 @@ const SignUp = () => {
 
     setLoading(true);
     try {
-      await api.post('/users', {
+      await authApi.post('/users', {
         first_name: form.firstName,
         last_name: form.lastName,
         email: form.email,

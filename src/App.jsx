@@ -9,6 +9,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import Verify     from './pages/Verify';
 import NewPassword from './pages/NewPassword';
 import Dashboard from './pages/Dashboard';
+import Admin from './pages/Admin';
+import AdminDashboard from './pages/AdminDashboard';
 
 const App = () => {
   const [showLoading, setShowLoading] = useState(true);
@@ -28,6 +30,8 @@ const App = () => {
         <Route path="/verify-code"     element={<Verify />}     />
         <Route path="/new-password" element={<NewPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   )

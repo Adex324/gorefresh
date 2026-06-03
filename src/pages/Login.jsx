@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import background from '../assets/background.svg';
 import logo from '../assets/logo.png';
-import api from '../api/axios';
+import authApi from '../api/authApi';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     
     try{
-      const response = await api.post("/users/login", { email, password });
+      const response = await authApi.post("/users/login", { email, password });
 
 const token = response.data.data.tokens.access_token;
 const refresh = response.data.data.tokens.refresh_token;

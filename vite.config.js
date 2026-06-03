@@ -7,5 +7,15 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    
   ],
+   server: {
+    proxy: {
+      '/api': {
+        target: 'https://gorefreshbackend-production.up.railway.app',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })
