@@ -1,34 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
-import Navbar from '../components/Navbar';
-import logo from '../assets/logo.png';
-import background from '../assets/background.svg';
-import Marketplace from '../sections/Marketplace';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { UserAuthService } from "../utils/userAuthService";
+import Navbar from "../components/Navbar";
+import logo from "../assets/logo.png";
+import background from "../assets/background.svg";
+import Marketplace from "../sections/Marketplace"; // not used directly but might be needed elsewhere
+// import api from '../api/axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // ── Icons ────────────────────────────────────────────────────
 const AccountIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+    />
   </svg>
 );
 
 const OrdersIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+    />
   </svg>
 );
 
 const InboxIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.981l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.981l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z"
+    />
   </svg>
 );
 
 const TrashIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+    />
   </svg>
 );
 
@@ -39,13 +81,18 @@ const AccountPanel = ({ user }) => (
     {user ? (
       <div className="flex flex-col gap-4">
         {[
-          { label: 'First Name', value: user.first_name },
-          { label: 'Last Name',  value: user.last_name  },
-          { label: 'Email',      value: user.email      },
-          { label: 'Status',     value: user.is_active ? 'Active' : 'Inactive' },
+          { label: "First Name", value: user.first_name },
+          { label: "Last Name", value: user.last_name },
+          { label: "Email", value: user.email },
+          { label: "Status", value: user.is_active ? "Active" : "Inactive" },
         ].map(({ label, value }) => (
-          <div key={label} className="flex flex-col gap-1 border-b border-gray-100 pb-3">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+          <div
+            key={label}
+            className="flex flex-col gap-1 border-b border-gray-100 pb-3"
+          >
+            <p className="text-xs text-gray-400 uppercase tracking-wider">
+              {label}
+            </p>
             <p className="text-sm font-medium text-[#1a1a1a]">{value}</p>
           </div>
         ))}
@@ -56,23 +103,25 @@ const AccountPanel = ({ user }) => (
   </div>
 );
 
-// ── Orders Panel ──────────────────────────────────────────────
-// ── Replace your existing OrdersPanel in Dashboard.jsx with this ──
-
+// ── Orders Panel (refactored to use UserAuthService) ─────────
 const OrdersPanel = () => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch cart on load
+  // Fetch cart on load using authenticated request
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await api.get('/carts/me');
-        setCart(response.data.data);
-        // save cart_id in case it wasn't saved before
-        localStorage.setItem('cart_id', response.data.data.id);
-      } catch {
-        setCart(null); // no cart yet = no orders
+        const response = await UserAuthService.authenticatedRequest(
+          `${API_BASE}/carts/me`,
+        );
+        if (!response.ok) throw new Error("Failed to fetch cart");
+        const json = await response.json();
+        setCart(json.data);
+        localStorage.setItem("cart_id", json.data.id);
+      } catch (err) {
+        console.log("No cart or error:", err);
+        setCart(null);
       } finally {
         setLoading(false);
       }
@@ -83,18 +132,31 @@ const OrdersPanel = () => {
   const removeItem = async (productId) => {
     if (!cart) return;
     try {
-      await api.delete(`/carts/${cart.id}/remove`, {
-        data: { products: [{ product_id: productId, quantity: 1 }] }
-      });
-      // Refresh cart after removing
-      const response = await api.get('/carts/me');
-      setCart(response.data.data);
+      const response = await UserAuthService.authenticatedRequest(
+        `${API_BASE}/carts/${cart.id}/remove`,
+        {
+          method: "DELETE",
+          body: JSON.stringify({
+            products: [{ product_id: productId, quantity: 1 }],
+          }),
+        },
+      );
+      if (!response.ok) throw new Error("Remove failed");
+      // Refresh cart after removal
+      const refreshRes = await UserAuthService.authenticatedRequest(
+        `${API_BASE}/carts/me`,
+      );
+      if (refreshRes.ok) {
+        const json = await refreshRes.json();
+        setCart(json.data);
+      }
     } catch (error) {
-      console.log('Remove failed:', error);
+      console.log("Remove failed:", error);
     }
   };
 
-  if (loading) return <p className="text-sm text-gray-400">Loading orders...</p>;
+  if (loading)
+    return <p className="text-sm text-gray-400">Loading orders...</p>;
 
   const products = cart?.products ?? [];
 
@@ -106,14 +168,17 @@ const OrdersPanel = () => {
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
           <OrdersIcon />
           <p className="text-gray-400 text-sm">You have no orders yet.</p>
-        <Link to="/#marketplace" className="btn-orange text-sm">
-  Shop Now
-</Link>
+          <Link to="/#marketplace" className="btn-orange text-sm">
+            Shop Now
+          </Link>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {products.map((item) => (
-            <div key={item.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl">
+            <div
+              key={item.id}
+              className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl"
+            >
               <img
                 src={item.product_thumbnail}
                 alt={item.product_name}
@@ -136,7 +201,6 @@ const OrdersPanel = () => {
             </div>
           ))}
 
-          {/* Totals */}
           <div className="border-t border-gray-200 pt-3 flex flex-col gap-1 text-sm">
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
@@ -190,49 +254,54 @@ const InboxPanel = () => {
 
 // ── Dashboard Page ────────────────────────────────────────────
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('account');
+  const [activeTab, setActiveTab] = useState("account");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    const fetchUser = async () => {
-      try {
-        const response = await api.get('/users/me');
-        console.log(response.data.data);
-        setUser(response.data.data);
-      } catch (error) {
-  console.log('Failed to fetch user:', error);
-  if (error.response?.status === 401) {
-    navigate('/login');
-  }
-}
+    const checkAuthAndFetchUser = async () => {
+      // Check if user is authenticated via UserAuthService
+      if (!UserAuthService.isAuthenticated()) {
+        navigate("/login");
+        return;
+      }
+
+      // Try to get stored user data first
+      let userData = UserAuthService.getUserData();
+      if (userData) {
+        setUser(userData);
+      } else {
+        // Fetch fresh user data
+        const fetchedUser = await UserAuthService.fetchAndStoreUser();
+        if (fetchedUser) {
+          setUser(fetchedUser);
+        } else {
+          // If fetch fails (e.g., invalid token), logout and redirect
+          UserAuthService.logout();
+          navigate("/login");
+        }
+      }
     };
-    fetchUser();
-  }, []);
+
+    checkAuthAndFetchUser();
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
-    navigate('/login');
+    UserAuthService.logout();
+    navigate("/login");
   };
 
   const tabs = [
-    { id: 'account', label: 'My Gorefresh Account', icon: <AccountIcon /> },
-    { id: 'orders',  label: 'Orders',               icon: <OrdersIcon />  },
-    { id: 'inbox',   label: 'Inbox',                icon: <InboxIcon />   },
+    { id: "account", label: "My Gorefresh Account", icon: <AccountIcon /> },
+    { id: "orders", label: "Orders", icon: <OrdersIcon /> },
+    { id: "inbox", label: "Inbox", icon: <InboxIcon /> },
   ];
 
   return (
     <div className="min-h-screen font-geist bg-white">
       <Navbar logo={logo} />
 
-     <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-6 min-h-[calc(100vh-80px)]">
-
+      <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-6 min-h-[calc(100vh-80px)]">
         {/* Sidebar */}
         <aside className="w-full md:w-60 flex-shrink-0 flex flex-col">
           <div className="bg-[#0C850C] rounded-2xl p-4 flex flex-col gap-2 shadow-lg flex-1">
@@ -241,9 +310,10 @@ const Dashboard = () => {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all duration-200
-                  ${activeTab === id
-                    ? 'bg-[#075207] text-white'
-                    : 'text-white/80 hover:bg-[#075207]/60 hover:text-white'
+                  ${
+                    activeTab === id
+                      ? "bg-[#075207] text-white"
+                      : "text-white/80 hover:bg-[#075207]/60 hover:text-white"
                   }`}
               >
                 {icon}
@@ -264,14 +334,13 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main
-  className="flex-1 rounded-2xl p-6 shadow-sm bg-cover bg-center bg-no-repeat"
-  style={{ backgroundImage: `url(${background})` }}
->
-          {activeTab === 'account' && <AccountPanel user={user} />}
-          {activeTab === 'orders'  && <OrdersPanel />}
-          {activeTab === 'inbox'   && <InboxPanel />}
+          className="flex-1 rounded-2xl p-6 shadow-sm bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${background})` }}
+        >
+          {activeTab === "account" && <AccountPanel user={user} />}
+          {activeTab === "orders" && <OrdersPanel />}
+          {activeTab === "inbox" && <InboxPanel />}
         </main>
-
       </div>
     </div>
   );
