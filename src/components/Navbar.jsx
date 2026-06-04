@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation  } from "react-router-dom";
-import api from "../api/axios";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+// import api from "../api/axios";
+import { UserAuthService } from "../utils/userAuthService";
 
 const Navbar = ({ logo }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -9,36 +10,30 @@ const Navbar = ({ logo }) => {
   const location = useLocation();
 
   const navLinks = [
-    { label: "Home",                 to: "/"          },
-    { label: "About Us",             to: "/about"     },
+    { label: "Home", to: "/" },
+    { label: "About Us", to: "/about" },
     { label: "Customer's Dashboard", to: "/dashboard" },
   ];
 
-  // Fetch user on mount if token exists
+  // Fetch user
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log("Navbar mounted, token:", token); 
-    if (!token) return;
-
-    const fetchUser = async () => {
-      try {
-        const response = await api.get("/users/me");
-        console.log("users/me response:", response.data); 
-        setUser(response.data.data);
-      } catch(error) {
-        console.log("users/me error:", error);
-        setUser(null);
+    const loadUser = async () => {
+      if (!UserAuthService.isAuthenticated()) return;
+      // Try to get stored user data first
+      let userData = UserAuthService.getUserData();
+      if (!userData) {
+        // fetch fresh if missing
+        userData = await UserAuthService.fetchAndStoreUser();
       }
+      setUser(userData);
     };
-
-    fetchUser();
+    loadUser();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
+    UserAuthService.logout();
     setUser(null);
-    navigate("/login");;
+    navigate("/login");
   };
 
   return (
@@ -50,15 +45,15 @@ const Navbar = ({ logo }) => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex gap-8 lg:gap-15">
-         {navLinks.map(({ label, to }) => (
-  <Link
-    key={to}
-    to={to}
-    className={`nav_link ${location.pathname === to ? 'text-[#0C850C] font-semibold' : ''}`}
-  >
-    {label}
-  </Link>
-))}
+          {navLinks.map(({ label, to }) => (
+            <Link
+              key={to}
+              to={to}
+              className={`nav_link ${location.pathname === to ? "text-[#0C850C] font-semibold" : ""}`}
+            >
+              {label}
+            </Link>
+          ))}
         </div>
 
         {/* Desktop Right Side — changes based on login state */}
@@ -66,14 +61,23 @@ const Navbar = ({ logo }) => {
           {user ? (
             <>
               <span className="text-sm text-gray-600">
-                Hi, <span className="font-semibold text-[#0C850C]">{user.first_name}</span>
+                Hi,{" "}
+                <span className="font-semibold text-[#0C850C]">
+                  {user.first_name}
+                </span>
               </span>
-              <button onClick={handleLogout} className="btn-green">Log Out</button>
+              <button onClick={handleLogout} className="btn-green">
+                Log Out
+              </button>
             </>
           ) : (
             <>
-              <Link to="/signup"      className="btn-green">Sign Up</Link>
-              <a href="#marketplace"  className="btn-orange">Shop Now</a>
+              <Link to="/signup" className="btn-green">
+                Sign Up
+              </Link>
+              <a href="#marketplace" className="btn-orange">
+                Shop Now
+              </a>
             </>
           )}
         </div>
@@ -84,9 +88,15 @@ const Navbar = ({ logo }) => {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-transform duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-opacity duration-300 ${menuOpen ? "opacity-0" : ""}`} />
-          <span className={`block w-6 h-0.5 bg-gray-700 transition-transform duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-transform duration-300 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
+          />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-opacity duration-300 ${menuOpen ? "opacity-0" : ""}`}
+          />
+          <span
+            className={`block w-6 h-0.5 bg-gray-700 transition-transform duration-300 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+          />
         </button>
       </nav>
 
@@ -95,26 +105,43 @@ const Navbar = ({ logo }) => {
         <div className="md:hidden bg-white shadow-lg flex flex-col items-start px-6 py-4 gap-4 z-50">
           {navLinks.map(({ label, to }) => (
             <Link
-  key={to}
-  to={to}
-  className={`nav_link ${location.pathname === to ? 'text-[#0C850C] font-semibold' : ''}`}
-  onClick={() => setMenuOpen(false)}
->
-  {label}
-</Link>
+              key={to}
+              to={to}
+              className={`nav_link ${location.pathname === to ? "text-[#0C850C] font-semibold" : ""}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              {label}
+            </Link>
           ))}
           <div className="flex flex-col gap-3 pt-2">
             {user ? (
               <>
                 <span className="text-sm text-gray-600">
-                  Hi, <span className="font-semibold text-[#0C850C]">{user.first_name}</span>
+                  Hi,{" "}
+                  <span className="font-semibold text-[#0C850C]">
+                    {user.first_name}
+                  </span>
                 </span>
-                <button onClick={handleLogout} className="btn-green w-fit">Log Out</button>
+                <button onClick={handleLogout} className="btn-green w-fit">
+                  Log Out
+                </button>
               </>
             ) : (
               <div className="flex gap-3">
-                <Link to="/signup"     className="btn-green" onClick={() => setMenuOpen(false)}>Sign Up</Link>
-                <a href="#marketplace" className="btn-orange" onClick={() => setMenuOpen(false)}>Shop Now</a>
+                <Link
+                  to="/signup"
+                  className="btn-green"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+                <a
+                  href="#marketplace"
+                  className="btn-orange"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Shop Now
+                </a>
               </div>
             )}
           </div>

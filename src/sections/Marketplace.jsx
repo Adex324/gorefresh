@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
+import React, { useState, useEffect } from "react";
+import { fetchProducts, createCart, addToCart } from "../api/api";
+import { UserAuthService } from "../utils/userAuthService";
 
 const StarRating = ({ rating, max = 5 }) => {
-  const count = Math.round(rating); // rating comes as a number from backend
+  const count = Math.round(rating);
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }, (_, i) => (
         <svg
           key={i}
-          className={`w-4 h-4 ${i < count ? 'text-[#F76319]' : 'text-gray-300'}`}
+          className={`w-4 h-4 ${i < count ? "text-[#F76319]" : "text-gray-300"}`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -20,27 +21,35 @@ const StarRating = ({ rating, max = 5 }) => {
 };
 
 const ProductCard = ({ product, onAddToCart, adding }) => (
-  <div className="flex flex-col rounded-lg overflow-hidden border-2 border-gray-200 bg-white
-    transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl cursor-pointer">
+  <div
+    className="flex flex-col rounded-lg overflow-hidden border-2 border-gray-200 bg-white
+    transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl cursor-pointer"
+  >
     <div className="bg-gray-100 flex items-center justify-center p-4 aspect-square">
       <img
         src={product.thumbnail_url}
         alt={product.name}
         className="object-contain w-full h-full"
-        onError={(e) => { e.target.src = '/placeholder.png'; }} // fallback if image fails
+        onError={(e) => {
+          e.target.src = "/placeholder.png";
+        }}
       />
     </div>
     <div className="p-3 flex flex-col gap-1.5">
-      <p className="text-[#404040] font-medium text-sm leading-tight">{product.name}</p>
+      <p className="text-[#404040] font-medium text-sm leading-tight">
+        {product.name}
+      </p>
       <StarRating rating={product.rating} />
       <div className="flex items-center justify-between mt-1 flex-wrap gap-2">
-        <p className="text-[#404040] font-bold text-base">₦{product.price.toLocaleString()}</p>
+        <p className="text-[#404040] font-bold text-base">
+          ₦{product.price.toLocaleString()}
+        </p>
         <button
           onClick={() => onAddToCart(product)}
           disabled={adding === product.id}
           className="btn-green text-xs px-3 py-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {adding === product.id ? 'Adding...' : 'Add to cart'}
+          {adding === product.id ? "Adding..." : "Add to cart"}
         </button>
       </div>
     </div>
@@ -50,95 +59,84 @@ const ProductCard = ({ product, onAddToCart, adding }) => (
 const Marketplace = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(null); // tracks which product is being added
-  const [feedback, setFeedback] = useState(''); // success/error message
+  const [adding, setAdding] = useState(null);
+  const [feedback, setFeedback] = useState("");
 
-  // Fetch all products from backend
+  // Fetch products – now using our new service
   useEffect(() => {
-    const fetchProducts = async () => {
+    const getProducts = async () => {
       try {
-        const response = await api.get('/products');
-        setProducts(response.data.data);
+        const data = await fetchProducts();
+        setProducts(data);
       } catch (error) {
-        console.log('Failed to fetch products:', error);
+        console.log("Failed to fetch products:", error);
+        setFeedback("Failed to load products. Please refresh.");
+        setTimeout(() => setFeedback(""), 3000);
       } finally {
         setLoading(false);
       }
     };
-    fetchProducts();
+    getProducts();
   }, []);
-useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get('/products');
-      console.log('Products response:', response.data); // add this
-      setProducts(response.data.data);
-    } catch (error) {
-      console.log('Failed to fetch products:', error); // already there
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchProducts();
-}, []);
-  const addToCart = async (product) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setFeedback('Please log in to add items to cart');
-      setTimeout(() => setFeedback(''), 3000);
+
+  const handleAddToCart = async (product) => {
+    // Check authentication using UserAuthService
+    if (!UserAuthService.isAuthenticated()) {
+      setFeedback("Please log in to add items to cart");
+      setTimeout(() => setFeedback(""), 3000);
       return;
     }
 
     setAdding(product.id);
 
     try {
-      // Step 1 — check if user already has a cart
-      let cartId = localStorage.getItem('cart_id');
+      let cartId = localStorage.getItem("cart_id");
 
       if (!cartId) {
-        // Step 2 — no cart yet, create one with the product
-        const createResponse = await api.post('/carts', {
-          products: [{ product_id: product.id, quantity: 1 }]
-        });
-        cartId = createResponse.data.data.id;
-        localStorage.setItem('cart_id', cartId);
+        // Create a new cart with this product
+        const newCart = await createCart([
+          { product_id: product.id, quantity: 1 },
+        ]);
+        cartId = newCart.id;
+        localStorage.setItem("cart_id", cartId);
       } else {
-        // Step 3 — cart exists, just add the product
-        await api.post(`/carts/${cartId}/add`, {
-          products: [{ product_id: product.id, quantity: 1 }]
-        });
+        // Add to existing cart
+        await addToCart(cartId, product.id, 1);
       }
 
       setFeedback(`${product.name} added to cart!`);
-      setTimeout(() => setFeedback(''), 3000);
-
+      setTimeout(() => setFeedback(""), 3000);
     } catch (error) {
-      console.log('Add to cart failed:', error);
-      setFeedback('Failed to add to cart. Please try again.');
-      setTimeout(() => setFeedback(''), 3000);
+      console.error("Add to cart failed:", error);
+      setFeedback("Failed to add to cart. Please try again.");
+      setTimeout(() => setFeedback(""), 3000);
     } finally {
       setAdding(null);
     }
   };
 
   return (
-    <section id="marketplace" className="bg-white py-16 px-6 md:px-12 font-geist">
+    <section
+      id="marketplace"
+      className="bg-white py-16 px-6 md:px-12 font-geist"
+    >
       <p className="text-[#0C850C] font-bold text-3xl sm:text-4xl md:text-5xl text-center mb-10">
         MarketPlace
       </p>
 
-      {/* Feedback message */}
       {feedback && (
-        <p className={`text-center text-sm mb-6 font-medium
-          ${feedback.includes('Failed') || feedback.includes('log in')
-            ? 'text-red-500'
-            : 'text-[#0C850C]'
-          }`}>
+        <p
+          className={`text-center text-sm mb-6 font-medium
+          ${
+            feedback.includes("Failed") || feedback.includes("log in")
+              ? "text-red-500"
+              : "text-[#0C850C]"
+          }`}
+        >
           {feedback}
         </p>
       )}
 
-      {/* Loading state */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
           <p className="text-gray-400 text-sm">Loading products...</p>
@@ -149,7 +147,7 @@ useEffect(() => {
             <ProductCard
               key={product.id}
               product={product}
-              onAddToCart={addToCart}
+              onAddToCart={handleAddToCart}
               adding={adding}
             />
           ))}
