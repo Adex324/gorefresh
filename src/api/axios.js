@@ -5,12 +5,10 @@ const api = axios.create({
 
 });
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  console.log('[Interceptor] Token being added:', token ? token.substring(0,20)+'…' : 'no token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+  if (!config.headers['Authorization']) { // ← don't overwrite if already set
+    const token = localStorage.getItem('token');
+    if (token) config.headers['Authorization'] = `Bearer ${token}`;
   }
-   console.log('[Interceptor] Final headers:', config.headers);
   return config;
 });
 

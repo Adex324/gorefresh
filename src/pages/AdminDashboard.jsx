@@ -72,12 +72,12 @@ const EyeToggle = ({ show, onToggle }) => (
 
 // ── Admin Profile Panel ───────────────────────────────────────
 const AdminProfilePanel = ({ admin }) => {
-  const [passwords, setPasswords]             = useState({ current: '', new: '', confirm: '' });
-  const [showCurrent, setShowCurrent]         = useState(false);
-  const [showNew, setShowNew]                 = useState(false);
-  const [showConfirm, setShowConfirm]         = useState(false);
-  const [passwordMsg, setPasswordMsg]         = useState('');
-  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwords, setPasswords]                   = useState({ current: '', new: '', confirm: '' });
+  const [showCurrent, setShowCurrent]               = useState(false);
+  const [showNew, setShowNew]                       = useState(false);
+  const [showConfirm, setShowConfirm]               = useState(false);
+  const [passwordMsg, setPasswordMsg]               = useState('');
+  const [passwordLoading, setPasswordLoading]       = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const handlePasswordSave = async () => {
@@ -201,10 +201,11 @@ const CategoryModal = ({ onClose, onCreated }) => {
     if (!name.trim()) { setError('Category name is required'); return; }
     setLoading(true);
     try {
+      // POST /products/categories — body: { name }, Authorization header required
       await api.post('/products/categories', { name }, { headers: adminHeaders() });
-      onCreated(); // refresh categories list
-      onClose();
-    } catch {
+      onCreated();
+    } catch (err) {
+      console.error('Create category error:', err.response?.data);
       setError('Failed to create category. Please try again.');
     } finally {
       setLoading(false);
@@ -249,8 +250,9 @@ const CategoryModal = ({ onClose, onCreated }) => {
 // ── Add/Edit Product Modal ────────────────────────────────────
 const ProductModal = ({ product, categories, onClose, onSaved, onNeedCategory }) => {
   const isEdit = !!product;
-  const [form, setForm]           = useState({
+  const [form, setForm] = useState({
     name:        product?.name                 || '',
+    description: product?.description          || '',
     price:       product?.price                || '',
     category_id: product?.product_category?.id || '',
   });
@@ -278,33 +280,43 @@ const ProductModal = ({ product, categories, onClose, onSaved, onNeedCategory })
       let productId = product?.id;
 
       if (isEdit) {
+        // PUT /products/{product_id} — category goes in body as product_category_id
         await api.put(`/products/${productId}`, {
-          name: form.name,
-          price: Number(form.price),
+          name:                form.name,
+          description:         form.description || '',
+          price:               Number(form.price),
           product_category_id: Number(form.category_id),
         }, { headers: adminHeaders() });
       } else {
+        // POST /products?product_category_id=X — category is a query param
         const res = await api.post(
           `/products?product_category_id=${form.category_id}`,
-          { name: form.name, price: Number(form.price) },
+          {
+            name:        form.name,
+            description: form.description || '',
+            price:       Number(form.price),
+          },
           { headers: adminHeaders() }
         );
         productId = res.data.data.id;
       }
 
-      // Upload image if selected
+      // Upload thumbnail if an image was selected
       if (imageFile && productId) {
         const formData = new FormData();
         formData.append('thumbnail', imageFile);
         await api.post(`/products/images/${productId}/thumbnail`, formData, {
-          headers: { ...adminHeaders(), 'Content-Type': 'multipart/form-data' }
+          headers: {
+            ...adminHeaders(),
+            'Content-Type': 'multipart/form-data',
+          },
         });
       }
 
       onSaved();
     } catch (err) {
+      console.error('Save product error:', err.response?.data);
       setError('Failed to save product. Please try again.');
-      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -340,8 +352,27 @@ const ProductModal = ({ product, categories, onClose, onSaved, onNeedCategory })
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
 
-          <InputField label="Product Name" value={form.name}  onChange={e => setForm(p => ({ ...p, name: e.target.value }))}  placeholder="e.g. My Dear Pap 100g" />
-          <InputField label="Price (₦)"    value={form.price} onChange={e => setForm(p => ({ ...p, price: e.target.value }))} type="number" placeholder="e.g. 500" />
+          <InputField
+            label="Product Name"
+            value={form.name}
+            onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+            placeholder="e.g. My Dear Pap 100g"
+          />
+
+          <InputField
+            label="Description"
+            value={form.description}
+            onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+            placeholder="e.g. Nutritious pap product for all ages"
+          />
+
+          <InputField
+            label="Price (₦)"
+            value={form.price}
+            onChange={e => setForm(p => ({ ...p, price: e.target.value }))}
+            type="number"
+            placeholder="e.g. 500"
+          />
 
           {/* Category dropdown + create category link */}
           <div className="flex flex-col gap-1">
@@ -390,19 +421,19 @@ const ProductModal = ({ product, categories, onClose, onSaved, onNeedCategory })
 
 // ── Products Panel ────────────────────────────────────────────
 const ProductsPanel = () => {
-  const [products,      setProducts]      = useState([]);
-  const [categories,    setCategories]    = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [showModal,     setShowModal]     = useState(false);
-  const [showCatModal,  setShowCatModal]  = useState(false);
-  const [editProduct,   setEditProduct]   = useState(null);
+  const [products,     setProducts]     = useState([]);
+  const [categories,   setCategories]   = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [showModal,    setShowModal]    = useState(false);
+  const [showCatModal, setShowCatModal] = useState(false);
+  const [editProduct,  setEditProduct]  = useState(null);
 
   const fetchProducts = async () => {
     try {
       const res = await api.get('/products');
       setProducts(res.data.data);
     } catch (err) {
-      console.log('Failed to fetch products:', err);
+      console.error('Failed to fetch products:', err);
     } finally {
       setLoading(false);
     }
@@ -413,7 +444,7 @@ const ProductsPanel = () => {
       const res = await api.get('/products/categories');
       setCategories(res.data.data);
     } catch (err) {
-      console.log('Failed to fetch categories:', err);
+      console.error('Failed to fetch categories:', err);
     }
   };
 
@@ -439,9 +470,8 @@ const ProductsPanel = () => {
   };
 
   const handleCategoryCreated = () => {
-    fetchCategories(); // refresh dropdown
+    fetchCategories();
     setShowCatModal(false);
-    // reopen product modal if it was open
     setShowModal(true);
   };
 
@@ -484,7 +514,11 @@ const ProductsPanel = () => {
               {products.map(product => (
                 <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
-                    <img src={product.thumbnail_url || '/placeholder.png'} alt={product.name} className="w-12 h-12 object-contain rounded-lg bg-gray-100" />
+                    <img
+                      src={product.thumbnail_url || '/placeholder.png'}
+                      alt={product.name}
+                      className="w-12 h-12 object-contain rounded-lg bg-gray-100"
+                    />
                   </td>
                   <td className="px-4 py-3 font-medium text-[#1a1a1a]">{product.name}</td>
                   <td className="px-4 py-3 text-[#1a1a1a]">₦{product.price?.toLocaleString()}</td>
@@ -495,10 +529,18 @@ const ProductsPanel = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <button onClick={() => { setEditProduct(product); setShowModal(true); }} className="text-gray-400 hover:text-[#0C850C] transition-colors" title="Edit">
+                      <button
+                        onClick={() => { setEditProduct(product); setShowModal(true); }}
+                        className="text-gray-400 hover:text-[#0C850C] transition-colors"
+                        title="Edit"
+                      >
                         <EditIcon />
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Delete"
+                      >
                         <TrashIcon />
                       </button>
                     </div>

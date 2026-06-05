@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const authApi = axios.create({
-  baseURL: "https://gorefreshbackend-production.up.railway.app",
+  baseURL: "/api",
   // No request/response interceptors – clean for login/signup
 });
 
