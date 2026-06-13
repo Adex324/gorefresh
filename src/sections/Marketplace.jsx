@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { fetchProducts, createCart, addToCart } from "../api/api";
+import api from "../api/axios";
+import { fetchProducts } from "../api/api";
 import { UserAuthService } from "../utils/userAuthService";
+
+// Helper to get auth headers
+const authHeaders = () => ({
+  Authorization: `Bearer ${UserAuthService.getAccessToken()}`,
+});
 
 const StarRating = ({ rating, max = 5 }) => {
   const count = Math.round(rating);
@@ -61,8 +67,10 @@ const Marketplace = () => {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const [cartId, setCartId] = useState(null);
+  const [cartLoading, setCartLoading] = useState(true);
 
-  // Fetch products – now using our new service
+  // Fetch products
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -79,8 +87,37 @@ const Marketplace = () => {
     getProducts();
   }, []);
 
+  // Fetch existing cart for authenticated user
+  useEffect(() => {
+    const fetchUserCart = async () => {
+      if (!UserAuthService.isAuthenticated()) {
+        setCartLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get("/carts/me", { headers: authHeaders() });
+        const cart = response.data.data;
+        if (cart && cart.id) {
+          setCartId(cart.id);
+        }
+      } catch (error) {
+        if (error.response?.data?.error?.msg === "Cart not found") {
+          setCartId(null);
+        } else {
+          console.error("Failed to fetch cart:", error);
+          setFeedback("Could not load your cart. You can still add items.");
+          setTimeout(() => setFeedback(""), 3000);
+        }
+      } finally {
+        setCartLoading(false);
+      }
+    };
+
+    fetchUserCart();
+  }, []);
+
   const handleAddToCart = async (product) => {
-    // Check authentication using UserAuthService
     if (!UserAuthService.isAuthenticated()) {
       setFeedback("Please log in to add items to cart");
       setTimeout(() => setFeedback(""), 3000);
@@ -90,18 +127,27 @@ const Marketplace = () => {
     setAdding(product.id);
 
     try {
-      let cartId = localStorage.getItem("cart_id");
+      let currentCartId = cartId;
 
-      if (!cartId) {
-        // Create a new cart with this product
-        const newCart = await createCart([
-          { product_id: product.id, quantity: 1 },
-        ]);
-        cartId = newCart.id;
-        localStorage.setItem("cart_id", cartId);
+      // If no cart exists, create one with this product
+      if (!currentCartId) {
+        const createPayload = {
+          products: [{ product_id: product.id, quantity: 1 }],
+        };
+        const createRes = await api.post("/carts", createPayload, {
+          headers: authHeaders(),
+        });
+        const newCart = createRes.data.data;
+        currentCartId = newCart.id;
+        setCartId(currentCartId);
       } else {
-        // Add to existing cart
-        await addToCart(cartId, product.id, 1);
+        // ✅ FIXED: Send the same bulk structure as the create endpoint
+        const addPayload = {
+          products: [{ product_id: product.id, quantity: 1 }],
+        };
+        await api.post(`/carts/${currentCartId}/add`, addPayload, {
+          headers: authHeaders(),
+        });
       }
 
       setFeedback(`${product.name} added to cart!`);
