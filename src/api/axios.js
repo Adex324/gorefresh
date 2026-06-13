@@ -6,7 +6,7 @@ const api = axios.create({
 });
 api.interceptors.request.use((config) => {
   if (!config.headers['Authorization']) { // ← don't overwrite if already set
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('user_access_token');
     if (token) config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;

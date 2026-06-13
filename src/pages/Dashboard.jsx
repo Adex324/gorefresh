@@ -133,14 +133,9 @@ const OrdersPanel = () => {
     if (!cart) return;
     try {
       const response = await UserAuthService.authenticatedRequest(
-        `${API_BASE}/carts/${cart.id}/remove`,
-        {
-          method: "DELETE",
-          body: JSON.stringify({
-            products: [{ product_id: productId, quantity: 1 }],
-          }),
-        },
-      );
+  `${API_BASE}/carts/${cart.id}/remove?product_id=${productId}`,
+  { method: "DELETE" }
+);
       if (!response.ok) throw new Error("Remove failed");
       // Refresh cart after removal
       const refreshRes = await UserAuthService.authenticatedRequest(
