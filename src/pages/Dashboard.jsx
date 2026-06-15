@@ -4,73 +4,31 @@ import { UserAuthService } from "../utils/userAuthService";
 import Navbar from "../components/Navbar";
 import logo from "../assets/logo.png";
 import background from "../assets/background.svg";
-import Marketplace from "../sections/Marketplace"; // not used directly but might be needed elsewhere
-// import api from '../api/axios';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 // ── Icons ────────────────────────────────────────────────────
 const AccountIcon = () => (
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-    />
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
   </svg>
 );
 
 const OrdersIcon = () => (
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-    />
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
   </svg>
 );
 
 const InboxIcon = () => (
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.981l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z"
-    />
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.981l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
   </svg>
 );
 
 const TrashIcon = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-    />
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
   </svg>
 );
 
@@ -82,18 +40,14 @@ const AccountPanel = ({ user }) => (
       <div className="flex flex-col gap-4">
         {[
           { label: "First Name", value: user.first_name },
-          { label: "Last Name", value: user.last_name },
-          { label: "Email", value: user.email },
-          { label: "Status", value: user.is_active ? "Active" : "Inactive" },
+          { label: "Last Name",  value: user.last_name  },
+          { label: "Email",      value: user.email      },
+          { label: "Phone",      value: user.phone      },
+          { label: "Status",     value: user.is_active ? "Active" : "Inactive" },
         ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="flex flex-col gap-1 border-b border-gray-100 pb-3"
-          >
-            <p className="text-xs text-gray-400 uppercase tracking-wider">
-              {label}
-            </p>
-            <p className="text-sm font-medium text-[#1a1a1a]">{value}</p>
+          <div key={label} className="flex flex-col gap-1 border-b border-gray-100 pb-3">
+            <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+            <p className="text-sm font-medium text-[#1a1a1a]">{value || "—"}</p>
           </div>
         ))}
       </div>
@@ -103,55 +57,138 @@ const AccountPanel = ({ user }) => (
   </div>
 );
 
-// ── Orders Panel (refactored to use UserAuthService) ─────────
+// ── Orders Panel ──────────────────────────────────────────────
 const OrdersPanel = () => {
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [cart, setCart]                   = useState(null);
+  const [loading, setLoading]             = useState(true);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [additionalInfo, setAdditionalInfo]   = useState('');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError]     = useState('');
+  const [orderRef, setOrderRef]               = useState(null); // after order placed
+  const [updatingQty, setUpdatingQty]         = useState(null); // product_id being updated
 
-  // Fetch cart on load using authenticated request
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await UserAuthService.authenticatedRequest(
-          `${API_BASE}/carts/me`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch cart");
-        const json = await response.json();
-        setCart(json.data);
-        localStorage.setItem("cart_id", json.data.id);
-      } catch (err) {
-        console.log("No cart or error:", err);
-        setCart(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCart();
-  }, []);
+  // ── Fetch cart ───────────────────────────────────────────
+  const fetchCart = async () => {
+    try {
+      const response = await UserAuthService.authenticatedRequest(`${API_BASE}/carts/me`);
+      if (!response.ok) throw new Error("Failed to fetch cart");
+      const json = await response.json();
+      setCart(json.data);
+      localStorage.setItem("cart_id", json.data.id);
+    } catch (err) {
+      console.log("No cart or error:", err);
+      setCart(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => { fetchCart(); }, []);
+
+  // ── Remove item ──────────────────────────────────────────
   const removeItem = async (productId) => {
     if (!cart) return;
     try {
-      const response = await UserAuthService.authenticatedRequest(
-  `${API_BASE}/carts/${cart.id}/remove?product_id=${productId}`,
-  { method: "DELETE" }
-);
-      if (!response.ok) throw new Error("Remove failed");
-      // Refresh cart after removal
-      const refreshRes = await UserAuthService.authenticatedRequest(
-        `${API_BASE}/carts/me`,
+      await UserAuthService.authenticatedRequest(
+        `${API_BASE}/carts/${cart.id}/remove?product_id=${productId}`,
+        { method: "DELETE" }
       );
-      if (refreshRes.ok) {
-        const json = await refreshRes.json();
-        setCart(json.data);
-      }
+      fetchCart();
     } catch (error) {
       console.log("Remove failed:", error);
     }
   };
 
-  if (loading)
-    return <p className="text-sm text-gray-400">Loading orders...</p>;
+  // ── Edit quantity ────────────────────────────────────────
+  const updateQuantity = async (productId, newQty) => {
+  if (!cart || newQty < 1) return;
+  setUpdatingQty(productId);
+  try {
+    const response = await UserAuthService.authenticatedRequest(
+      `${API_BASE}/carts/${cart.id}/edit`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ product_id: productId, quantity: newQty }),
+      }
+    );
+    if (!response.ok) throw new Error("Failed");
+    fetchCart();
+  } catch (err) {
+    console.log("Quantity update failed:", err);
+  } finally {
+    setUpdatingQty(null);
+  }
+};
+
+  // ── Checkout → create order → Paystack redirect ──────────
+  const handleCheckout = async () => {
+    if (!deliveryAddress.trim()) {
+      setCheckoutError("Please enter your delivery address"); return;
+    }
+    if (!cart) return;
+
+    setCheckoutLoading(true);
+    setCheckoutError('');
+    try {
+      const response = await UserAuthService.authenticatedRequest(
+        `${API_BASE}/orders`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            cart_id:          cart.id,
+            payment_method:   "paystack",
+            delivery_address: deliveryAddress,
+            additional_info:  additionalInfo,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.msg || "Failed to create order");
+      }
+
+      const json = await response.json();
+      console.log('Order response:', json); 
+console.log('Order data:', json.data); 
+
+      // Backend returns Paystack payment URL — redirect user to it
+      const paymentUrl = json.data?.payment_url || json.data?.authorization_url;
+    if (paymentUrl) {
+      window.location.href = paymentUrl;
+      } else {
+       const ref = json.data?.reference || json.data?.order_ref || String(json.data?.id || '');
+       setOrderRef(ref);
+      }
+    } catch (err) {
+      setCheckoutError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  // ── Download invoice ─────────────────────────────────────
+  const downloadInvoice = async (ref) => {
+    try {
+      const response = await UserAuthService.authenticatedRequest(
+        `${API_BASE}/orders/${ref}/invoice`
+      );
+      if (!response.ok) throw new Error("Failed to get invoice");
+      const blob = await response.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `invoice-${ref}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.log("Invoice download failed:", err);
+      alert("Failed to download invoice. Please try again.");
+    }
+  };
+
+  if (loading) return <p className="text-sm text-gray-400">Loading orders...</p>;
 
   const products = cart?.products ?? [];
 
@@ -159,34 +196,71 @@ const OrdersPanel = () => {
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-bold text-[#1a1a1a]">Orders</h2>
 
+      {/* Order placed — show invoice button */}
+      {orderRef && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col gap-3">
+          <p className="text-sm text-green-700 font-medium">
+            ✅ Order placed successfully! Reference: <span className="font-bold">{orderRef}</span>
+          </p>
+          <button
+            onClick={() => downloadInvoice(orderRef)}
+            className="w-fit bg-[#0C850C] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[#075207] transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Download Invoice
+          </button>
+        </div>
+      )}
+
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
           <OrdersIcon />
           <p className="text-gray-400 text-sm">You have no orders yet.</p>
-          <Link to="/#marketplace" className="btn-orange text-sm">
-            Shop Now
-          </Link>
+          <Link to="/" className="btn-orange text-sm">Shop Now</Link>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
+
+          {/* Cart Items */}
           {products.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl"
-            >
+            <div key={item.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl">
               <img
                 src={item.product_thumbnail}
                 alt={item.product_name}
                 className="w-14 h-14 object-contain rounded-lg bg-gray-100"
+                onError={e => { e.target.src = '/placeholder.png'; }}
               />
               <div className="flex-1">
                 <p className="font-medium text-sm">{item.product_name}</p>
                 <p className="text-xs text-gray-400">{item.product_category}</p>
-                <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
                 <p className="text-sm font-bold text-[#1a1a1a] mt-1">
                   ₦{(item.unit_price * item.quantity).toLocaleString()}
                 </p>
+
+                {/* Quantity controls */}
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
+                    disabled={item.quantity <= 1 || updatingQty === item.product_id}
+                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-[#0C850C] hover:text-[#0C850C] transition-colors disabled:opacity-40"
+                  >
+                    −
+                  </button>
+                  <span className="text-sm font-medium w-5 text-center">
+                    {updatingQty === item.product_id ? '...' : item.quantity}
+                  </span>
+                  <button
+                    onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
+                    disabled={updatingQty === item.product_id}
+                    className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:border-[#0C850C] hover:text-[#0C850C] transition-colors disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
+
               <button
                 onClick={() => removeItem(item.product_id)}
                 className="text-gray-400 hover:text-red-500 transition-colors"
@@ -196,7 +270,8 @@ const OrdersPanel = () => {
             </div>
           ))}
 
-          <div className="border-t border-gray-200 pt-3 flex flex-col gap-1 text-sm">
+          {/* Price summary */}
+          <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-2 text-sm bg-gray-50">
             <div className="flex justify-between text-gray-500">
               <span>Subtotal</span>
               <span>₦{cart.subtotal?.toLocaleString()}</span>
@@ -205,14 +280,62 @@ const OrdersPanel = () => {
               <span>Delivery fee</span>
               <span>₦{cart.delivery_fee?.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between font-bold text-[#1a1a1a] mt-1">
+            {cart.service_fee > 0 && (
+              <div className="flex justify-between text-gray-500">
+                <span>Service fee</span>
+                <span>₦{cart.service_fee?.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-[#1a1a1a] pt-2 border-t border-gray-200 mt-1">
               <span>Total</span>
               <span>₦{cart.total_amount?.toLocaleString()}</span>
             </div>
           </div>
 
-          <button className="w-full bg-[#0C850C] text-white font-semibold py-3 rounded-xl hover:bg-[#075207] transition-colors mt-2">
-            Checkout
+          {/* Delivery address */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-[#1a1a1a]">
+              Delivery Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={deliveryAddress}
+              onChange={e => { setDeliveryAddress(e.target.value); setCheckoutError(''); }}
+              placeholder="e.g. 12 Bodija Road, Ibadan, Oyo State"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors"
+            />
+          </div>
+
+          {/* Additional info */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-[#1a1a1a]">
+              Additional Info <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea
+              value={additionalInfo}
+              onChange={e => setAdditionalInfo(e.target.value)}
+              placeholder="e.g. Call before delivery, Gate code is 1234..."
+              rows={2}
+              className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors resize-none"
+            />
+          </div>
+
+          {/* Delivery fee note */}
+          <p className="text-xs text-gray-400">
+            📍 Delivery fee is calculated by our team based on your location. Contact us if you have questions.
+          </p>
+
+          {checkoutError && (
+            <p className="text-red-500 text-sm">{checkoutError}</p>
+          )}
+
+          {/* Checkout button */}
+          <button
+            onClick={handleCheckout}
+            disabled={checkoutLoading}
+            className="w-full bg-[#0C850C] text-white font-semibold py-3 rounded-xl hover:bg-[#075207] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {checkoutLoading ? 'Processing...' : `Checkout — ₦${cart.total_amount?.toLocaleString()}`}
           </button>
         </div>
       )}
@@ -221,63 +344,40 @@ const OrdersPanel = () => {
 };
 
 // ── Inbox Panel ───────────────────────────────────────────────
-const InboxPanel = () => {
-  // replace with real data when backend endpoint is ready
-  const messages = [];
-
-  return (
-    <div className="flex flex-col gap-6">
-      <h2 className="text-xl font-bold text-[#1a1a1a]">Inbox</h2>
-      {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-          <InboxIcon />
-          <p className="text-gray-400 text-sm">No messages yet.</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {messages.map((msg) => (
-            <div key={msg.id} className="p-4 border border-gray-200 rounded-xl">
-              <p className="font-medium text-sm">{msg.subject}</p>
-              <p className="text-xs text-gray-400 mt-1">{msg.preview}</p>
-            </div>
-          ))}
-        </div>
-      )}
+const InboxPanel = () => (
+  <div className="flex flex-col gap-6">
+    <h2 className="text-xl font-bold text-[#1a1a1a]">Inbox</h2>
+    <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+      <InboxIcon />
+      <p className="text-gray-400 text-sm">No messages yet.</p>
     </div>
-  );
-};
+  </div>
+);
 
 // ── Dashboard Page ────────────────────────────────────────────
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("account");
-  const [user, setUser] = useState(null);
+  const [user, setUser]           = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuthAndFetchUser = async () => {
-      // Check if user is authenticated via UserAuthService
       if (!UserAuthService.isAuthenticated()) {
-        navigate("/login");
-        return;
+        navigate("/login"); return;
       }
-
-      // Try to get stored user data first
       let userData = UserAuthService.getUserData();
       if (userData) {
         setUser(userData);
       } else {
-        // Fetch fresh user data
         const fetchedUser = await UserAuthService.fetchAndStoreUser();
         if (fetchedUser) {
           setUser(fetchedUser);
         } else {
-          // If fetch fails (e.g., invalid token), logout and redirect
           UserAuthService.logout();
           navigate("/login");
         }
       }
     };
-
     checkAuthAndFetchUser();
   }, [navigate]);
 
@@ -288,8 +388,8 @@ const Dashboard = () => {
 
   const tabs = [
     { id: "account", label: "My Gorefresh Account", icon: <AccountIcon /> },
-    { id: "orders", label: "Orders", icon: <OrdersIcon /> },
-    { id: "inbox", label: "Inbox", icon: <InboxIcon /> },
+    { id: "orders",  label: "Orders",               icon: <OrdersIcon />  },
+    { id: "inbox",   label: "Inbox",                icon: <InboxIcon />   },
   ];
 
   return (
@@ -297,7 +397,6 @@ const Dashboard = () => {
       <Navbar logo={logo} />
 
       <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-6 min-h-[calc(100vh-80px)]">
-        {/* Sidebar */}
         <aside className="w-full md:w-60 flex-shrink-0 flex flex-col">
           <div className="bg-[#0C850C] rounded-2xl p-4 flex flex-col gap-2 shadow-lg flex-1">
             {tabs.map(({ id, label, icon }) => (
@@ -305,17 +404,12 @@ const Dashboard = () => {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-left transition-all duration-200
-                  ${
-                    activeTab === id
-                      ? "bg-[#075207] text-white"
-                      : "text-white/80 hover:bg-[#075207]/60 hover:text-white"
-                  }`}
+                  ${activeTab === id ? "bg-[#075207] text-white" : "text-white/80 hover:bg-[#075207]/60 hover:text-white"}`}
               >
                 {icon}
                 {label}
               </button>
             ))}
-
             <div className="mt-auto pt-16">
               <button
                 onClick={handleLogout}
@@ -327,14 +421,13 @@ const Dashboard = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main
           className="flex-1 rounded-2xl p-6 shadow-sm bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${background})` }}
         >
           {activeTab === "account" && <AccountPanel user={user} />}
-          {activeTab === "orders" && <OrdersPanel />}
-          {activeTab === "inbox" && <InboxPanel />}
+          {activeTab === "orders"  && <OrdersPanel />}
+          {activeTab === "inbox"   && <InboxPanel />}
         </main>
       </div>
     </div>
