@@ -65,8 +65,8 @@ const OrdersPanel = () => {
   const [additionalInfo, setAdditionalInfo]   = useState('');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError]     = useState('');
-  const [orderRef, setOrderRef]               = useState(null); // after order placed
-  const [updatingQty, setUpdatingQty]         = useState(null); // product_id being updated
+  const [orderRef, setOrderRef]               = useState(null); 
+  const [updatingQty, setUpdatingQty]         = useState(null); 
 
   // ── Fetch cart ───────────────────────────────────────────
   const fetchCart = async () => {
