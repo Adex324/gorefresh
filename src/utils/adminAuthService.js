@@ -1,8 +1,8 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export class AuthService {
-  static ACCESS_TOKEN_KEY = "access_token";
-  static REFRESH_TOKEN_KEY = "refresh_token";
+  static ACCESS_TOKEN_KEY = "admin_token";
+  static REFRESH_TOKEN_KEY = "admin_refresh_token";
   static USER_DATA_KEY = "user_data";
 
   static isAuthenticated() {
