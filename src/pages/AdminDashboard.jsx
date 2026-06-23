@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import { AuthService } from "../utils/adminAuthService";
 import logo from "../assets/logo.png";
 import Navbar from "../components/Navbar";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+// ── Helper to get admin token ─────────────────────────────────
+const getAdminToken = () => localStorage.getItem("admin_token");
 
 // ── Icons (unchanged) ─────────────────────────────────────────
 const ProfileIcon = () => (
@@ -85,11 +90,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-// ── Helper ────────────────────────────────────────────────────
-const adminHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-});
-
 // ── Input Field ───────────────────────────────────────────────
 const InputField = ({ label, value, onChange, type = "text", placeholder }) => (
   <div className="flex flex-col gap-1">
@@ -150,7 +150,7 @@ const EyeToggle = ({ show, onToggle }) => (
   </button>
 );
 
-// ── Admin Profile Panel (unchanged) ───────────────────────────
+// ── Admin Profile Panel ──────────────────────────────────────
 const AdminProfilePanel = ({ admin }) => {
   const [passwords, setPasswords] = useState({
     current: "",
@@ -180,18 +180,27 @@ const AdminProfilePanel = ({ admin }) => {
     setPasswordLoading(true);
     setPasswordMsg("");
     try {
-      await api.patch(
-        "/admins/me/password",
+      const response = await AuthService.authenticatedRequest(
+        `${API_BASE}/admins/me/password`,
         {
-          current_password: passwords.current,
-          new_password: passwords.new,
+          method: "PATCH",
+          body: JSON.stringify({
+            current_password: passwords.current,
+            new_password: passwords.new,
+          }),
         },
-        { headers: adminHeaders() },
       );
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.msg || "Failed to change password");
+      }
       setPasswordMsg("Password changed successfully!");
       setPasswords({ current: "", new: "", confirm: "" });
-    } catch {
-      setPasswordMsg("Failed to change password. Check your current password.");
+    } catch (err) {
+      setPasswordMsg(
+        err.message ||
+          "Failed to change password. Check your current password.",
+      );
     } finally {
       setPasswordLoading(false);
     }
@@ -316,7 +325,7 @@ const AdminProfilePanel = ({ admin }) => {
   );
 };
 
-// ── Create Category Modal (unchanged) ─────────────────────────
+// ── Create Category Modal ────────────────────────────────────
 const CategoryModal = ({ onClose, onCreated }) => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -330,16 +339,22 @@ const CategoryModal = ({ onClose, onCreated }) => {
     }
     setLoading(true);
     try {
-      await api.post(
-        "/products/categories",
-        { name },
-        { headers: adminHeaders() },
+      const response = await AuthService.authenticatedRequest(
+        `${API_BASE}/products/categories`,
+        {
+          method: "POST",
+          body: JSON.stringify({ name }),
+        },
       );
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.msg || "Failed to create category");
+      }
       onCreated();
       onClose();
     } catch (err) {
-      console.error("Create category error:", err.response?.data);
-      setError("Failed to create category. Please try again.");
+      console.error("Create category error:", err);
+      setError(err.message || "Failed to create category. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -402,7 +417,7 @@ const CategoryModal = ({ onClose, onCreated }) => {
   );
 };
 
-// ── Product Modal (FIXED thumbnail endpoint) ──────────────────
+// ── Product Modal ─────────────────────────────────────────────
 const ProductModal = ({
   product,
   categories,
@@ -442,57 +457,71 @@ const ProductModal = ({
       let productId = product?.id;
 
       if (isEdit) {
-        // Edit: update product details
-        await api.put(
-          `/products/${productId}`,
+        // Update product details
+        const response = await AuthService.authenticatedRequest(
+          `${API_BASE}/products/${productId}`,
           {
-            name: form.name,
-            description: form.description || "",
-            price: Number(form.price),
-            product_category_id: Number(form.category_id),
+            method: "PUT",
+            body: JSON.stringify({
+              name: form.name,
+              description: form.description || "",
+              price: Number(form.price),
+              product_category_id: Number(form.category_id),
+            }),
           },
-          { headers: adminHeaders() },
         );
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.msg || "Failed to update product");
+        }
       } else {
-        // Create: first create the product (without image)
-        const createRes = await api.post(
-          `/products?product_category_id=${form.category_id}`,
+        // Create product
+        const response = await AuthService.authenticatedRequest(
+          `${API_BASE}/products?product_category_id=${form.category_id}`,
           {
-            name: form.name,
-            description: form.description || "",
-            price: Number(form.price),
+            method: "POST",
+            body: JSON.stringify({
+              name: form.name,
+              description: form.description || "",
+              price: Number(form.price),
+            }),
           },
-          { headers: adminHeaders() },
         );
-        productId = createRes.data.data.id;
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.msg || "Failed to create product");
+        }
+        const data = await response.json();
+        productId = data.data.id;
       }
 
-      // Upload thumbnail if a new file was selected (for both create and edit)
+      // Upload thumbnail if a new file was selected
       if (imageFile && productId) {
         const formData = new FormData();
         formData.append("thumbnail", imageFile);
-        // CORRECT endpoint according to your API spec
-        await api.post(`/products/images/${productId}/thumbnail`, formData, {
-          headers: { ...adminHeaders(), "Content-Type": "multipart/form-data" },
-        });
+
+        const token = getAdminToken();
+        const uploadRes = await fetch(
+          `${API_BASE}/products/images/${productId}/thumbnail`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              // Do NOT set Content-Type; browser will set it with boundary
+            },
+            body: formData,
+          },
+        );
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errData.error?.msg || "Failed to upload thumbnail");
+        }
       }
 
-      onSaved(); // close modal and refresh list
+      onSaved();
     } catch (err) {
-      console.error("Save product error:", err.response?.data);
-      // Show a more helpful error message
-      if (err.response?.status === 422) {
-        const detail = err.response.data.detail;
-        if (Array.isArray(detail)) {
-          setError(
-            detail.map((d) => `${d.loc.join(".")}: ${d.msg}`).join(", "),
-          );
-        } else {
-          setError("Validation error. Check your input fields.");
-        }
-      } else {
-        setError("Failed to save product. Please try again.");
-      }
+      console.error("Save product error:", err);
+      setError(err.message || "Failed to save product. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -626,7 +655,7 @@ const ProductModal = ({
   );
 };
 
-// ── Products Panel (unchanged) ────────────────────────────────
+// ── Products Panel ────────────────────────────────────────────
 const ProductsPanel = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -639,8 +668,12 @@ const ProductsPanel = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products");
-      setProducts(res.data.data);
+      const response = await AuthService.authenticatedRequest(
+        `${API_BASE}/products?page=1&size=100`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      setProducts(data.data);
     } catch (err) {
       console.error("Failed to fetch products:", err);
     } finally {
@@ -650,8 +683,12 @@ const ProductsPanel = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get("/products/categories");
-      setCategories(res.data.data);
+      const response = await AuthService.authenticatedRequest(
+        `${API_BASE}/products/categories?page=1&size=100`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch categories");
+      const data = await response.json();
+      setCategories(data.data);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
     }
@@ -665,15 +702,20 @@ const ProductsPanel = () => {
   const handleDelete = async () => {
     if (!deleteProduct) return;
     try {
-      await api.delete(`/products/${deleteProduct.id}`, {
-        headers: adminHeaders(),
-      });
+      const response = await AuthService.authenticatedRequest(
+        `${API_BASE}/products/${deleteProduct.id}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.msg || "Failed to delete product");
+      }
       setProducts((prev) => prev.filter((p) => p.id !== deleteProduct.id));
       setDeleteProduct(null);
       setErrorMsg("");
     } catch (err) {
       console.error("Delete failed:", err);
-      setErrorMsg("Failed to delete product. Please try again.");
+      setErrorMsg(err.message || "Failed to delete product. Please try again.");
       setTimeout(() => setErrorMsg(""), 3000);
       setDeleteProduct(null);
     }
@@ -877,7 +919,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("admin_token");
+    const token = getAdminToken();
     if (!token) {
       navigate("/admin");
       return;
@@ -885,12 +927,19 @@ const AdminDashboard = () => {
 
     const fetchAdmin = async () => {
       try {
-        const response = await api.get("/admins/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAdmin(response.data.data);
+        const response = await AuthService.authenticatedRequest(
+          `${API_BASE}/admins/me`,
+        );
+        if (!response.ok) {
+          localStorage.removeItem("admin_token");
+          localStorage.removeItem("admin_refresh_token");
+          navigate("/admin");
+          return;
+        }
+        const data = await response.json();
+        setAdmin(data.data);
       } catch (err) {
-        console.error("Failed to fetch admin:", err.response?.data);
+        console.error("Failed to fetch admin:", err);
         navigate("/admin");
       }
     };
@@ -913,7 +962,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen font-geist bg-white">
       <Navbar logo={logo} />
       <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-6 min-h-[calc(100vh-80px)]">
-        <aside className="w-full md:w-56 flex-shrink-0 flex flex-col">
+        <aside className="w-full md:w-56 shrink-0 flex flex-col">
           <div className="bg-[#0C850C] rounded-2xl p-4 flex flex-col gap-2 shadow-lg flex-1">
             {tabs.map(({ id, label, icon }) => (
               <button

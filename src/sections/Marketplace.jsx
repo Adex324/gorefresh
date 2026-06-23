@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
-import api from "../api/axios";
 import { fetchProducts } from "../api/api";
 import { UserAuthService } from "../utils/userAuthService";
 
-// Helper to get auth headers
-const authHeaders = () => ({
-  Authorization: `Bearer ${UserAuthService.getAccessToken()}`,
-});
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const StarRating = ({ rating, max = 5 }) => {
   const count = Math.round(rating);
@@ -70,7 +66,7 @@ const Marketplace = () => {
   const [cartId, setCartId] = useState(null);
   const [cartLoading, setCartLoading] = useState(true);
 
-  // Fetch products
+  // Fetch products (public, no auth)
   useEffect(() => {
     const getProducts = async () => {
       try {
@@ -96,19 +92,28 @@ const Marketplace = () => {
       }
 
       try {
-        const response = await api.get("/carts/me", { headers: authHeaders() });
-        const cart = response.data.data;
-        if (cart && cart.id) {
-          setCartId(cart.id);
+        const response = await UserAuthService.authenticatedRequest(
+          `${API_BASE}/carts/me`,
+        );
+        if (!response.ok) {
+          // If cart not found (404), treat as no cart
+          if (response.status === 404) {
+            setCartId(null);
+          } else {
+            throw new Error("Failed to fetch cart");
+          }
+        } else {
+          const json = await response.json();
+          const cart = json.data;
+          if (cart && cart.id) {
+            setCartId(cart.id);
+            localStorage.setItem("cart_id", cart.id);
+          }
         }
       } catch (error) {
-        if (error.response?.data?.error?.msg === "Cart not found") {
-          setCartId(null);
-        } else {
-          console.error("Failed to fetch cart:", error);
-          setFeedback("Could not load your cart. You can still add items.");
-          setTimeout(() => setFeedback(""), 3000);
-        }
+        console.error("Failed to fetch cart:", error);
+        setFeedback("Could not load your cart. You can still add items.");
+        setTimeout(() => setFeedback(""), 3000);
       } finally {
         setCartLoading(false);
       }
@@ -134,27 +139,45 @@ const Marketplace = () => {
         const createPayload = {
           products: [{ product_id: product.id, quantity: 1 }],
         };
-        const createRes = await api.post("/carts", createPayload, {
-          headers: authHeaders(),
-        });
-        const newCart = createRes.data.data;
+        const response = await UserAuthService.authenticatedRequest(
+          `${API_BASE}/carts`,
+          {
+            method: "POST",
+            body: JSON.stringify(createPayload),
+          },
+        );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error?.msg || "Failed to create cart");
+        }
+        const json = await response.json();
+        const newCart = json.data;
         currentCartId = newCart.id;
         setCartId(currentCartId);
+        localStorage.setItem("cart_id", currentCartId);
       } else {
-        // ✅ FIXED: Send the same bulk structure as the create endpoint
+        // Add to existing cart
         const addPayload = {
           products: [{ product_id: product.id, quantity: 1 }],
         };
-        await api.post(`/carts/${currentCartId}/add`, addPayload, {
-          headers: authHeaders(),
-        });
+        const response = await UserAuthService.authenticatedRequest(
+          `${API_BASE}/carts/${currentCartId}/add`,
+          {
+            method: "POST",
+            body: JSON.stringify(addPayload),
+          },
+        );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.error?.msg || "Failed to add to cart");
+        }
       }
 
       setFeedback(`${product.name} added to cart!`);
       setTimeout(() => setFeedback(""), 3000);
     } catch (error) {
       console.error("Add to cart failed:", error);
-      setFeedback("Failed to add to cart. Please try again.");
+      setFeedback(error.message || "Failed to add to cart. Please try again.");
       setTimeout(() => setFeedback(""), 3000);
     } finally {
       setAdding(null);
@@ -172,8 +195,7 @@ const Marketplace = () => {
 
       {feedback && (
         <p
-          className={`text-center text-sm mb-6 font-medium
-          ${
+          className={`text-center text-sm mb-6 font-medium ${
             feedback.includes("Failed") || feedback.includes("log in")
               ? "text-red-500"
               : "text-[#0C850C]"
