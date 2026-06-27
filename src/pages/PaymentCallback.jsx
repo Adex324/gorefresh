@@ -32,17 +32,35 @@ const PaymentCallback = () => {
 
         const data = await response.json();
 
-        // Backend returns Paystack verification response:
-        // { status: "success", data: { status: "success", reference, ... } }
+        // 🔍 Log the actual response to see its structure
+        console.log("✅ Verification response:", data);
+
+        // Paystack response structure:
+        // {
+        //   "status": true,                 // boolean – overall success
+        //   "message": "Verification successful",
+        //   "data": {
+        //     "status": "success",          // transaction status (string)
+        //     "reference": "...",
+        //     ...
+        //   }
+        // }
+        //
+        // Your backend might wrap it further – we handle both cases.
+
+        // Determine if payment succeeded
         const isSuccess =
-          data.status === "success" && data.data?.status === "success";
+          // Top-level status is true (Paystack native)
+          (data.status === true || data.status === "true") &&
+          // And inner transaction status is "success" (string)
+          (data.data?.status === "success" || data.data?.status === true);
 
         if (isSuccess) {
           setStatus("success");
-          setMessage("Payment successful! Your order is confirmed.");
+          setMessage("✅ Payment successful! Your order is confirmed.");
         } else {
           setStatus("failed");
-          setMessage("Payment was not successful. Please try again.");
+          setMessage("❌ Payment was not successful. Please try again.");
         }
       } catch (error) {
         console.error("Verification error:", error);
@@ -54,7 +72,7 @@ const PaymentCallback = () => {
     verifyPayment();
   }, [reference]);
 
-  // Redirect back to dashboard after a few seconds on success
+  // Redirect to orders on success
   useEffect(() => {
     if (status === "success") {
       const timer = setTimeout(() => navigate("/dashboard?tab=orders"), 5000);
