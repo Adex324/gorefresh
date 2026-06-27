@@ -1,16 +1,17 @@
-import React, { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Hero from './pages/Hero'
-import About from './pages/About'
-import Loading from './components/Loading';
-import SignUp from './pages/SignUp';
-import Login from './pages/Login';
-import ForgotPassword from './pages/ForgotPassword';
-import Verify     from './pages/Verify';
-import NewPassword from './pages/NewPassword';
-import Dashboard from './pages/Dashboard';
-import Admin from './pages/Admin';
-import AdminDashboard from './pages/AdminDashboard';
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Hero from "./pages/Hero";
+import About from "./pages/About";
+import Loading from "./components/Loading";
+import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import Verify from "./pages/Verify";
+import NewPassword from "./pages/NewPassword";
+import PaymentCallback from "./pages/PaymentCallback";
+import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   const [showLoading, setShowLoading] = useState(true);
@@ -22,19 +23,20 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/"      element={<Hero />}  />
+        <Route path="/" element={<Hero />} />
         <Route path="/about" element={<About />} />
-        <Route path = "/signup" element={<SignUp/>}/>
-        <Route path="/login" element={<Login/>}/>
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-code"     element={<Verify />}     />
+        <Route path="/verify-code" element={<Verify />} />
         <Route path="/new-password" element={<NewPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/payment" element={<PaymentCallback />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
-  )
-}
+  );
+};
 
-export default App
+export default App;
