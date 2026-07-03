@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const adminApi = axios.create({
-  baseURL: '/api',
+  baseURL:  import.meta.env.VITE_API_BASE_URL,
 });
 
 adminApi.interceptors.request.use((config) => {
