@@ -67,6 +67,18 @@ const SignUp = () => {
     setForm({ ...form, [name]: value });
     setErrors((prev) => ({ ...prev, [name]: '' })); // clear field error on type
   };
+  const formatPhoneNumber = (raw) => {
+  let formatted = raw;
+  if (raw.startsWith('+234') && raw.length > 4) {
+    const digits = raw.slice(4);
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 3));
+    if (digits.length > 3) parts.push(digits.slice(3, 6));
+    if (digits.length > 6) parts.push(digits.slice(6, 10));
+    formatted = '+234 ' + parts.join(' ');
+  }
+  return formatted;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -166,19 +178,20 @@ const SignUp = () => {
           </Field>
 
           {/* Phone */}
-          <Field label="Phone Number" name="phone" errors={errors}>
-            <input
-              type="tel"
-              name="phone"
-              value={form.phone}
-              onChange={(e) => {
-      const value = e.target.value.replace(/[^\d+]/g, ''); // only digits and +
-       handleChange({ target: { name: 'phone', value } });
-      }}
-              placeholder="+2348012345678"
-              className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
-            />
-          </Field>
+        <Field label="Phone Number" name="phone" errors={errors}>
+  <input
+    type="tel"
+    name="phone"
+    value={formatPhoneNumber(form.phone)}  // ✅ Display formatted version
+    onChange={(e) => {
+      const raw = e.target.value.replace(/[^\d+]/g, '');
+      handleChange({ target: { name: 'phone', value: raw } });
+      // No need to manually set e.target.value – React will re-render with the formatted value
+    }}
+    placeholder="+234 801 234 5678"
+    className="w-full border border-gray-400 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-transparent"
+  />
+</Field>
 
           {/* Password */}
           <Field label="Password" name="password" errors={errors}>
