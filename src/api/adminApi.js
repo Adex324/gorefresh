@@ -1,8 +1,8 @@
-// api/adminAxios.js
+// src/api/adminApi.js
 import axios from 'axios';
 
 const adminApi = axios.create({
-  baseURL:  import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 adminApi.interceptors.request.use((config) => {
