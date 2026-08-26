@@ -536,77 +536,42 @@ const OrdersPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [statusUpdate, setStatusUpdate] = useState({ orderId: null, newStatus: '' });
+  const [statusFilter, setStatusFilter] = useState('');
   const [updating, setUpdating] = useState(false);
 
- const fetchOrders = async () => {
-  setLoading(true);
-  setError('');
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    let response = null;
-    let lastError = null;
-
-    // The most complete body we can think of
-    const bodyOptions = [
-      { page: 1, size: 100, status: 'pending', start_date: today, end_date: today },
-      { page: 1, size: 100, status: 'all', start_date: today, end_date: today },
-      { page: 1, size: 100, status: 'pending' },
-      { page: 1, size: 100, start_date: today, end_date: today },
-      { page: 1, size: 100 },
-      { status: 'pending' },
-      { start_date: today, end_date: today },
-      {},
-    ];
-
-    for (const body of bodyOptions) {
-      try {
-        response = await adminApi.post('/admins/orders', body);
-        console.log('POST succeeded with body:', body);
-        break;
-      } catch (err) {
-        lastError = err;
-        console.log('POST failed with body:', body);
-        console.log('Error data:', err.response?.data);
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const params = {
+        page: 1,
+        size: 100,
+      };
+      // Backend requires a status – default to 'Pending' if none selected
+      if (statusFilter) {
+        params.status = statusFilter;
+      } else {
+        params.status = 'Pending';
       }
-    }
+      // Optional date filters (uncomment if needed)
+      // const today = new Date().toISOString().split('T')[0];
+      // params.start_date = today;
+      // params.end_date = today;
 
-    // If POST fails, try GET as last resort
-    if (!response) {
-      try {
-        response = await adminApi.get('/admins/orders', {
-          params: { page: 1, size: 100, status: 'pending' }
-        });
-        console.log('GET succeeded');
-      } catch (err) {
-        lastError = err;
-        console.log('GET failed:', err.response?.data);
-      }
+      const response = await adminApi.get('/admins/orders', { params });
+      setOrders(response.data.data || []);
+    } catch (err) {
+      console.error('Fetch orders error:', err);
+      console.error('Error response:', err.response?.data);
+      setError(err.response?.data?.error?.msg || 'Could not load orders');
+    } finally {
+      setLoading(false);
     }
-
-    if (!response) {
-      throw lastError || new Error('All attempts failed');
-    }
-
-    setOrders(response.data.data || []);
-  } catch (err) {
-    console.error('Fetch orders error:', err);
-    if (err.response) {
-      const errorData = err.response.data?.error || {};
-      const msg = errorData.msg || 'Unknown error';
-      const loc = errorData.loc || [];
-      setError(`${msg} (missing: ${loc.join(', ')})`);
-    } else {
-      setError(err.message || 'Could not load orders');
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [statusFilter]);
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     if (!newStatus) return;
@@ -616,7 +581,6 @@ const OrdersPanel = () => {
         params: { new_status: newStatus },
       });
       await fetchOrders();
-      setStatusUpdate({ orderId: null, newStatus: '' });
     } catch (err) {
       console.error('Status update error:', err);
       setError(err.response?.data?.error?.msg || 'Could not update status');
@@ -641,13 +605,14 @@ const OrdersPanel = () => {
 
   const getStatusBadge = (status) => {
     const map = {
-      pending: 'bg-yellow-100 text-yellow-700',
-      processing: 'bg-blue-100 text-blue-700',
-      shipped: 'bg-purple-100 text-purple-700',
-      delivered: 'bg-green-100 text-green-700',
-      cancelled: 'bg-red-100 text-red-700',
+      Pending: 'bg-yellow-100 text-yellow-700',
+      Confirmed: 'bg-blue-100 text-blue-700',
+      Preparing: 'bg-purple-100 text-purple-700',
+      'Out for Delivery': 'bg-orange-100 text-orange-700',
+      Delivered: 'bg-green-100 text-green-700',
+      Cancelled: 'bg-red-100 text-red-700',
     };
-    return map[status?.toLowerCase()] || 'bg-gray-100 text-gray-700';
+    return map[status] || 'bg-gray-100 text-gray-700';
   };
 
   const OrderDetailModal = ({ order, onClose }) => {
@@ -656,7 +621,7 @@ const OrdersPanel = () => {
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
         <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-lg text-[#1a1a1a]">Order #{order.order_ref}</h3>
+            <h3 className="font-bold text-lg text-[#1a1a1a]">Order #{order.order_ref || order.id}</h3>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -667,15 +632,15 @@ const OrdersPanel = () => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-400">Customer</p>
-              <p className="font-medium">{order.full_name}</p>
+              <p className="font-medium">{order.full_name || order.customer_name || '—'}</p>
             </div>
             <div>
               <p className="text-gray-400">Email</p>
-              <p className="font-medium">{order.email}</p>
+              <p className="font-medium">{order.email || '—'}</p>
             </div>
             <div>
               <p className="text-gray-400">Phone</p>
-              <p className="font-medium">{order.phone_number}</p>
+              <p className="font-medium">{order.phone_number || '—'}</p>
             </div>
             <div>
               <p className="text-gray-400">Total</p>
@@ -683,7 +648,7 @@ const OrdersPanel = () => {
             </div>
             <div className="col-span-2">
               <p className="text-gray-400">Delivery Address</p>
-              <p className="font-medium">{order.delivery_address}</p>
+              <p className="font-medium">{order.delivery_address || '—'}</p>
             </div>
             <div>
               <p className="text-gray-400">Payment Status</p>
@@ -694,7 +659,7 @@ const OrdersPanel = () => {
             <div>
               <p className="text-gray-400">Order Status</p>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.status)}`}>
-                {order.status || 'pending'}
+                {order.status || 'Pending'}
               </span>
             </div>
             <div className="col-span-2">
@@ -744,17 +709,26 @@ const OrdersPanel = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl font-bold text-[#1a1a1a]">Order Management</h2>
-        <button
-          onClick={fetchOrders}
-          className="text-sm text-[#0C850C] hover:underline flex items-center gap-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0C850C] transition-colors"
+          >
+            <option value="">All Orders (default: Pending)</option>
+            {['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'].map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <button
+            onClick={fetchOrders}
+            className="bg-[#0C850C] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#075207] transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {orders.length === 0 ? (
@@ -767,8 +741,8 @@ const OrdersPanel = () => {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {['Order Ref', 'Customer', 'Total', 'Payment', 'Status', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium">
+                {['Order Ref', 'Customer', 'Date', 'Payment', 'Status', 'Total', 'Actions'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-medium whitespace-nowrap">
                     {h}
                   </th>
                 ))}
@@ -777,14 +751,16 @@ const OrdersPanel = () => {
             <tbody className="divide-y divide-gray-100">
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-sm">{order.order_ref}</td>
+                  <td className="px-4 py-3 font-mono text-sm">{order.order_ref || order.id}</td>
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium">{order.full_name}</p>
-                      <p className="text-xs text-gray-400">{order.email}</p>
+                      <p className="font-medium">{order.full_name || order.customer_name || '—'}</p>
+                      <p className="text-xs text-gray-400">{order.email || '—'}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-medium">₦{order.total_amount?.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                    {order.created_at ? new Date(order.created_at).toLocaleDateString() : '—'}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                       {order.payment_status || 'pending'}
@@ -792,48 +768,17 @@ const OrdersPanel = () => {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.status)}`}>
-                      {order.status || 'pending'}
+                      {order.status || 'Pending'}
                     </span>
                   </td>
+                  <td className="px-4 py-3 font-medium">₦{order.total_amount?.toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="text-blue-600 hover:text-blue-800 text-xs underline"
-                      >
-                        View
-                      </button>
-                      <select
-                        value={statusUpdate.orderId === order.id ? statusUpdate.newStatus : ''}
-                        onChange={(e) => {
-                          setStatusUpdate({
-                            orderId: order.id,
-                            newStatus: e.target.value,
-                          });
-                          if (e.target.value) {
-                            handleStatusUpdate(order.id, e.target.value);
-                          }
-                        }}
-                        disabled={updating}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 focus:border-[#0C850C] outline-none"
-                      >
-                        <option value="">Update status</option>
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                      {order.status?.toLowerCase() !== 'delivered' && (
-                        <button
-                          onClick={() => handleMarkDelivered(order.id)}
-                          disabled={updating}
-                          className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors disabled:opacity-50"
-                        >
-                          Mark Delivered
-                        </button>
-                      )}
-                    </div>
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="text-xs bg-gray-100 hover:bg-[#0C850C] hover:text-white text-gray-600 font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                    >
+                      View Details
+                    </button>
                   </td>
                 </tr>
               ))}
