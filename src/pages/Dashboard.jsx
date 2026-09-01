@@ -6,6 +6,46 @@ import logo from "../assets/logo.png";
 import background from "../assets/background.svg";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+// ── Nigerian states with delivery fees ──────────────────────
+const STATES = [
+  { name: "Abia", fee: 1500 },
+  { name: "Adamawa", fee: 2000 },
+  { name: "Akwa Ibom", fee: 1800 },
+  { name: "Anambra", fee: 1500 },
+  { name: "Bauchi", fee: 2000 },
+  { name: "Bayelsa", fee: 2000 },
+  { name: "Benue", fee: 1800 },
+  { name: "Borno", fee: 2500 },
+  { name: "Cross River", fee: 2000 },
+  { name: "Delta", fee: 1800 },
+  { name: "Ebonyi", fee: 1800 },
+  { name: "Edo", fee: 1500 },
+  { name: "Ekiti", fee: 1500 },
+  { name: "Enugu", fee: 1500 },
+  { name: "FCT (Abuja)", fee: 1200 },
+  { name: "Gombe", fee: 2000 },
+  { name: "Imo", fee: 1500 },
+  { name: "Jigawa", fee: 2200 },
+  { name: "Kaduna", fee: 2000 },
+  { name: "Kano", fee: 2000 },
+  { name: "Katsina", fee: 2200 },
+  { name: "Kebbi", fee: 2200 },
+  { name: "Kogi", fee: 1800 },
+  { name: "Kwara", fee: 1500 },
+  { name: "Lagos", fee: 1000 },
+  { name: "Nasarawa", fee: 1500 },
+  { name: "Niger", fee: 1800 },
+  { name: "Ogun", fee: 1200 },
+  { name: "Ondo", fee: 1500 },
+  { name: "Osun", fee: 1500 },
+  { name: "Oyo", fee: 1500 },
+  { name: "Plateau", fee: 1800 },
+  { name: "Rivers", fee: 1800 },
+  { name: "Sokoto", fee: 2500 },
+  { name: "Taraba", fee: 2200 },
+  { name: "Yobe", fee: 2500 },
+  { name: "Zamfara", fee: 2500 },
+];
 
 // ── Icons ────────────────────────────────────────────────────
 const AccountIcon = () => (
@@ -135,16 +175,19 @@ const AccountPanel = ({ user }) => (
 );
 
 // ── Orders Panel ──────────────────────────────────────────────
+// ── Orders Panel ──────────────────────────────────────────────
 const OrdersPanel = () => {
   const [cart, setCart]                   = useState(null);
   const [loading, setLoading]             = useState(true);
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [deliveryFee, setDeliveryFee]     = useState(0);
   const [additionalInfo, setAdditionalInfo]   = useState('');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError]     = useState('');
-  const [orderRef, setOrderRef]               = useState(null); // after order placed
-  const [updatingQty, setUpdatingQty]         = useState(null); // product_id being updated
-  const [ratingProduct, setRatingProduct]     = useState(null); // product currently being rated
+  const [orderRef, setOrderRef]               = useState(null);
+  const [updatingQty, setUpdatingQty]         = useState(null);
+  const [ratingProduct, setRatingProduct]     = useState(null);
 
   // ── Fetch cart ───────────────────────────────────────────
   const fetchCart = async () => {
@@ -198,10 +241,23 @@ const OrdersPanel = () => {
     }
   };
 
+  // ── Handle state change ──────────────────────────────────
+  const handleStateChange = (e) => {
+    const stateName = e.target.value;
+    setSelectedState(stateName);
+    const found = STATES.find(s => s.name === stateName);
+    setDeliveryFee(found ? found.fee : 0);
+  };
+
   // ── Checkout → create order → Paystack redirect ──────────
   const handleCheckout = async () => {
+    if (!selectedState) {
+      setCheckoutError("Please select your state for delivery");
+      return;
+    }
     if (!deliveryAddress.trim()) {
-      setCheckoutError("Please enter your delivery address"); return;
+      setCheckoutError("Please enter your full delivery address");
+      return;
     }
     if (!cart) return;
 
@@ -215,8 +271,9 @@ const OrdersPanel = () => {
           body: JSON.stringify({
             cart_id:          cart.id,
             payment_method:   "paystack",
-            delivery_address: deliveryAddress,
+            delivery_address: `${deliveryAddress}, ${selectedState}`,
             additional_info:  additionalInfo,
+            delivery_fee:     deliveryFee,
           }),
         }
       );
@@ -229,14 +286,12 @@ const OrdersPanel = () => {
       const json = await response.json();
       console.log("Order response:", json);
 
-      // Backend returns payment URL nested under data.data.authorization_url
       const paymentUrl = json.data?.data?.authorization_url || json.data?.authorization_url;
       if (paymentUrl) {
         window.location.href = paymentUrl;
         return;
       }
 
-      // Fallback: no payment URL — extract reference for invoice
       const ref =
         json.data?.data?.reference ||
         json.data?.reference ||
@@ -280,12 +335,13 @@ const OrdersPanel = () => {
   if (loading) return <p className="text-sm text-gray-400">Loading orders...</p>;
 
   const products = cart?.products ?? [];
+  const subtotal = cart?.subtotal || 0;
+  const total = subtotal + deliveryFee + (cart?.service_fee || 0);
 
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-bold text-[#1a1a1a]">Orders</h2>
 
-      {/* Order placed — show invoice button */}
       {orderRef && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col gap-3">
           <p className="text-sm text-green-700 font-medium">
@@ -312,7 +368,6 @@ const OrdersPanel = () => {
       ) : (
         <div className="flex flex-col gap-4">
 
-          {/* Cart Items */}
           {products.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-3 border border-gray-200 rounded-xl">
               <img
@@ -327,8 +382,6 @@ const OrdersPanel = () => {
                 <p className="text-sm font-bold text-[#1a1a1a] mt-1">
                   ₦{(item.unit_price * item.quantity).toLocaleString()}
                 </p>
-
-                {/* Quantity controls */}
                 <div className="flex items-center gap-2 mt-2">
                   <button
                     onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
@@ -348,7 +401,6 @@ const OrdersPanel = () => {
                     +
                   </button>
                 </div>
-
                 <button
                   onClick={() => setRatingProduct(item)}
                   className="text-xs text-[#0C850C] underline font-medium mt-2"
@@ -356,7 +408,6 @@ const OrdersPanel = () => {
                   Rate this product
                 </button>
               </div>
-
               <button
                 onClick={() => removeItem(item.product_id)}
                 className="text-gray-400 hover:text-red-500 transition-colors"
@@ -366,43 +417,39 @@ const OrdersPanel = () => {
             </div>
           ))}
 
-          {/* Price summary */}
-          <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-2 text-sm bg-gray-50">
-            <div className="flex justify-between text-gray-500">
-              <span>Subtotal</span>
-              <span>₦{cart.subtotal?.toLocaleString()}</span>
+          {/* Delivery location selection */}
+          <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-2 bg-gray-50">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-[#1a1a1a]">
+                Select your State <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedState}
+                onChange={handleStateChange}
+                className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors bg-white"
+              >
+                <option value="">Choose your state</option>
+                {STATES.map((state) => (
+                  <option key={state.name} value={state.name}>
+                    {state.name} — ₦{state.fee.toLocaleString()}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="flex justify-between text-gray-500">
-              <span>Delivery fee</span>
-              <span>₦{cart.delivery_fee?.toLocaleString()}</span>
-            </div>
-            {cart.service_fee > 0 && (
-              <div className="flex justify-between text-gray-500">
-                <span>Service fee</span>
-                <span>₦{cart.service_fee?.toLocaleString()}</span>
-              </div>
-            )}
-            <div className="flex justify-between font-bold text-[#1a1a1a] pt-2 border-t border-gray-200 mt-1">
-              <span>Total</span>
-              <span>₦{cart.total_amount?.toLocaleString()}</span>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-[#1a1a1a]">
+                Full Delivery Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={deliveryAddress}
+                onChange={e => { setDeliveryAddress(e.target.value); setCheckoutError(''); }}
+                placeholder="e.g. 12 Bodija Road, Ibadan (include street, house number, landmark)"
+                className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors"
+              />
             </div>
           </div>
 
-          {/* Delivery address */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#1a1a1a]">
-              Delivery Address <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={deliveryAddress}
-              onChange={e => { setDeliveryAddress(e.target.value); setCheckoutError(''); }}
-              placeholder="e.g. 12 Bodija Road, Ibadan, Oyo State"
-              className="border border-gray-300 rounded-lg px-4 py-3 text-sm outline-none focus:border-[#0C850C] transition-colors"
-            />
-          </div>
-
-          {/* Additional info */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-[#1a1a1a]">
               Additional Info <span className="text-gray-400 font-normal">(optional)</span>
@@ -416,27 +463,48 @@ const OrdersPanel = () => {
             />
           </div>
 
-          {/* Delivery fee note */}
+          <div className="border border-gray-200 rounded-xl p-4 flex flex-col gap-2 text-sm bg-gray-50">
+            <div className="flex justify-between text-gray-500">
+              <span>Subtotal</span>
+              <span>₦{subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Delivery fee</span>
+              <span>₦{deliveryFee.toLocaleString()}</span>
+            </div>
+            {cart?.service_fee > 0 && (
+              <div className="flex justify-between text-gray-500">
+                <span>Service fee</span>
+                <span>₦{cart.service_fee.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-[#1a1a1a] pt-2 border-t border-gray-200 mt-1">
+              <span>Total</span>
+              <span>₦{total.toLocaleString()}</span>
+            </div>
+          </div>
+
           <p className="text-xs text-gray-400">
-            📍 Delivery fee is calculated by our team based on your location. Contact us if you have questions.
+            📍 Delivery fee is based on your state. We'll calculate the exact distance when we process your order.
           </p>
 
           {checkoutError && (
             <p className="text-red-500 text-sm">{checkoutError}</p>
           )}
 
-          {/* Checkout button */}
           <button
             onClick={handleCheckout}
-            disabled={checkoutLoading}
+            disabled={checkoutLoading || !selectedState || !deliveryAddress}
             className="w-full bg-[#0C850C] text-white font-semibold py-3 rounded-xl hover:bg-[#075207] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {checkoutLoading ? 'Processing...' : `Checkout — ₦${cart.total_amount?.toLocaleString()}`}
+            {checkoutLoading
+              ? 'Processing...'
+              : `Checkout — ₦${total.toLocaleString()}`
+            }
           </button>
         </div>
       )}
 
-      {/* Rating Modal */}
       {ratingProduct && (
         <RatingModal
           product={ratingProduct}
