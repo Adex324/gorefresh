@@ -123,7 +123,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div className='flex text-md text-[#1a1a1a] justify-center gap-2 font-semibold flex-wrap'>
+        <div className='flex text-sm text-[#1a1a1a] justify-center gap-2 font-semibold flex-wrap'>
           <Link to="/forgot-password" className="underline text-[#0C850C] transition-colors">
             Forgot your Password?
           </Link>
