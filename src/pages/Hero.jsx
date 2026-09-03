@@ -54,7 +54,7 @@ const Hero = () => {
               <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040]">Naturally Nourishing.</p>
             </div>
             <div className="flex gap-4">
-              <a className="btn-green" href="">Contact us</a>
+              <a className="btn-green" href="https://wa.link/2bhuqq">Contact us</a>
              <a href="#marketplace" className="btn-orange">Shop Now</a>
             </div>
           </div>

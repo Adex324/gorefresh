@@ -72,8 +72,8 @@ const Navbar = ({ logo }) => {
             </>
           ) : (
             <>
-              <Link to="/signup" className="btn-green">
-                Sign Up
+              <Link to="/login" className="btn-green">
+                Sign in
               </Link>
               <a href="#marketplace" className="btn-orange">
                 Shop Now
@@ -129,11 +129,11 @@ const Navbar = ({ logo }) => {
             ) : (
               <div className="flex gap-3">
                 <Link
-                  to="/signup"
+                  to="/login"
                   className="btn-green"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Sign Up
+                  Sign In
                 </Link>
                 <a
                   href="#marketplace"
