@@ -159,11 +159,10 @@ const Marketplace = () => {
   }, [toastProduct]);
 
   const handleAddToCart = async (product) => {
-    if (!UserAuthService.isAuthenticated()) {
-      setFeedback("Please log in to add items to cart");
-      setTimeout(() => setFeedback(""), 3000);
-      return;
-    }
+   if (!UserAuthService.isAuthenticated()) {
+  window.location.href = "/login";
+  return;
+}
 
     setAdding(product.id);
 

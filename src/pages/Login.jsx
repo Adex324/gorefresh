@@ -60,7 +60,7 @@ const Login = () => {
 
         <div className="text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-[#1a1a1a]">Welcome to Gorefresh Foods</h1>
-          <p className="text-sm text-gray-500 mt-2">Use your email or phone number to log in</p>
+          <p className="text-sm text-gray-500 mt-2">Use your email or phone number(+234) to log in</p>
         </div>
 
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
@@ -70,7 +70,7 @@ const Login = () => {
           >
             <input
               type="email"
-              placeholder="Email or phone number"
+              placeholder="Email or Phone number (+234)"
               value={email}
               onChange={(e) => { setError(''); setEmail(e.target.value); }}
               onBlur={() => { if (email) setEmailLocked(true); }}
