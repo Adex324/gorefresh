@@ -60,9 +60,9 @@ const Hero = () => {
   </div>
 
   {/* Hide on mobile, show on md+ */}
-  <div className="hidden md:flex items-center justify-center">
-    <img src={hero_side_pic} alt="" className="w-full max-h-[500px] object-contain" />
-  </div>
+  <div className="flex items-center justify-center px-6 md:px-0">
+  <img src={hero_side_pic} alt="" className="w-2/3 md:w-full max-h-[300px] md:max-h-[500px] object-contain" />
+</div>
 </div>
       </section>
 
