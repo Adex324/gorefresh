@@ -22,7 +22,7 @@ const STATES = [
   { name: "Edo", fee: 1500 },
   { name: "Ekiti", fee: 1500 },
   { name: "Enugu", fee: 1500 },
-  { name: "FCT (Abuja)", fee: 1200 },
+  { name: "FCT (Abuja)", fee: 5000 },
   { name: "Gombe", fee: 2000 },
   { name: "Imo", fee: 1500 },
   { name: "Jigawa", fee: 2200 },
@@ -38,13 +38,13 @@ const STATES = [
   { name: "Ogun", fee: 1200 },
   { name: "Ondo", fee: 1500 },
   { name: "Osun", fee: 1500 },
-  { name: "Oyo", fee: 1500 },
+  { name: "Oyo", fee: 500 },
   { name: "Plateau", fee: 1800 },
   { name: "Rivers", fee: 1800 },
   { name: "Sokoto", fee: 2500 },
-  { name: "Taraba", fee: 2200 },
-  { name: "Yobe", fee: 2500 },
-  { name: "Zamfara", fee: 2500 },
+  { name: "Taraba", fee: 2500 },
+  { name: "Yobe", fee: 5000 },
+  { name: "Zamfara", fee: 5000 },
 ];
 
 // ── Icons ────────────────────────────────────────────────────
