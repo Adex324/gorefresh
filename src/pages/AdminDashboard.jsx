@@ -301,9 +301,9 @@ const ProductModal = ({ product, categories, onClose, onSaved, onNeedCategory })
 
       onSaved();
     } catch (err) {
-      setError('Failed to save product. Please try again.');
-      console.log(err);
-    } finally {
+  console.log('Full error:', err.response?.data); // add this
+  setError('Failed to save product. Please try again.');
+  } finally {
       setLoading(false);
     }
   };
@@ -515,6 +515,7 @@ const ProductsPanel = () => {
           onClose={() => { setShowModal(false); setEditProduct(null); }}
           onSaved={handleSaved}
           onNeedCategory={() => { setShowModal(false); setShowCatModal(true); }}
+          
         />
       )}
 
