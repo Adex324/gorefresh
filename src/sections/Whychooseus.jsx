@@ -12,7 +12,7 @@ const Whychooseus = () => {
               {[
                 { img: delicious_pic, title: 'Delicious Taste', desc: 'Satisfy your sweet cravings with our irresistible pap' },
                 { img: quality_pic,   title: 'Best Quality',    desc: 'Experience the melt in your mouth goodness of our pap' },
-                { img: fastest_pic,   title: 'Fastest Delivery',desc: 'Get your pap delivered hot and fresh.' },
+                { img: fastest_pic,   title: 'Fastest Delivery',desc: 'Get your pap delivered immediately.' },
               ].map(({ img, title, desc }) => (
                 <div key={title} className="flex flex-col items-center gap-2">
                   <img className="w-14 mb-4" src={img} alt={title} />

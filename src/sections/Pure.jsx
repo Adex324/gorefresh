@@ -26,7 +26,7 @@ const Pure = () => {
           Pure &amp; Nutritious <span className="font-bold block">PAP</span>
         </p>
         <p className="text-base sm:text-lg md:text-xl max-w-xs sm:max-w-sm md:max-w-md">
-          Enjoy the wholesome goodness of traditional fermented pap made from premium corn
+          Enjoy the wholesome goodness of traditional and rich pap made from premium corn
         </p>
         <a href="#marketplace" className="btn-orange">Shop Now</a>
       </div>

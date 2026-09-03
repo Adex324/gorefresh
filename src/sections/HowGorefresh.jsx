@@ -10,9 +10,9 @@ const HowGorefresh = () => {
           <p className="text-[#0C850C] font-bold text-3xl sm:text-4xl md:text-5xl mb-10">How Gorefresh works</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { img: one_icon,   title: 'Choose Your Products' },
-              { img: two_icon,   title: 'Place Your Order' },
-              { img: three_icon, title: 'Fastest Delivery' },
+              { img: one_icon,   title: 'Mix the powder with room temperature water' },
+              { img: two_icon,   title: 'Add boiling water and stir well to avoid lumps' },
+              { img: three_icon, title: 'Enjoy the rich taste of the gorefresh pap' },
             ].map(({ img, title }, index, array) => (
               <div
                 key={title}
