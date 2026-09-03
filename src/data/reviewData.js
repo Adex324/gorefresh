@@ -44,7 +44,7 @@ export const reviews = [
     id: 5,
     name: "Aramidefunmi",
     stars: 5,
-    review: "I love it! I appreciate the fast delivery and fresh taste. Highly recommended for busy parents.",
+    review: "I love it! I appreciate the fast delivery and fresh taste. Highly recommended for busy Students.",
     imageUrl: aramidefunmi,
     location: "Ibadan, NG"
   },  
