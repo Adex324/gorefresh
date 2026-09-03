@@ -37,10 +37,10 @@ const Hero = () => {
   return (
     <>
       {/* Section 1 — Hero */}
-      <section
-        className="relative w-full min-h-screen font-geist flex flex-col bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${background})` }}
-      >
+     <section
+  className="relative w-full font-geist flex flex-col bg-cover bg-center bg-no-repeat pb-10 md:min-h-screen"
+  style={{ backgroundImage: `url(${background})` }}
+>
         {/* Navbar */}
          <div>
       <Navbar logo={logo} />
@@ -48,22 +48,20 @@ const Hero = () => {
 
         {/* Hero Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-  <div className="flex flex-col gap-8 mt-20 md:mt-40 px-6 md:px-20">
-    <div>
-      <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040] md:w-5/6">Wholesome Pap.</p>
-      <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040]">Naturally Nourishing.</p>
-    </div>
-    <div className="flex gap-4">
-      <a className="btn-green" href="https://wa.link/2bhuqq">Contact us</a>
-      <a href="#marketplace" className="btn-orange">Shop Now</a>
-    </div>
-  </div>
-
-  {/* Hide on mobile, show on md+ */}
-  <div className="flex items-center justify-center px-6 md:px-0">
-  <img src={hero_side_pic} alt="" className="w-2/3 md:w-full max-h-[300px] md:max-h-[500px] object-contain" />
-</div>
-</div>
+          <div className="flex flex-col gap-8 mt-20 md:mt-40 px-6 md:px-20">
+            <div>
+              <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040] md:w-5/6">Wholesome Pap.</p>
+              <p className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#404040]">Naturally Nourishing.</p>
+            </div>
+            <div className="flex gap-4">
+              <a className="btn-green" href="https://wa.link/2bhuqq">Contact us</a>
+             <a href="#marketplace" className="btn-orange">Shop Now</a>
+            </div>
+          </div>
+          <div>
+            <img src={hero_side_pic} alt="" />
+          </div>
+        </div>
       </section>
 
       {/* Section 2 — Pure & Nutritious */}
